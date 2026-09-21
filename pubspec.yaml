@@ -1,0 +1,32 @@
+name: huddle_up
+description: Huddle Up - Antarctic Penguin Puzzle Game
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  shared_preferences: ^2.2.3
+  audioplayers: ^6.0.0
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+  collection: ^1.18.0
+  google_mobile_ads: ^9.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/penguins/
+    - assets/images/tiles/
+    - assets/images/ui/
+    - assets/levels/
+    - assets/audio/
