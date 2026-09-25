@@ -1,0 +1,339 @@
+{
+  "levels": [
+    {
+      "id": "w1_l01",
+      "world": 1,
+      "level": 1,
+      "par": 3,
+      "hint": "Move Blue right, then Green down to meet it!",
+      "tiles": [
+        [1,1,1,1,1,1],
+        [1,0,0,0,0,1],
+        [1,0,1,1,0,1],
+        [1,0,0,0,0,1],
+        [1,0,0,7,0,1],
+        [1,1,1,1,1,1]
+      ],
+      "penguins": [
+        {"id":0,"color":"blue","x":1,"y":1},
+        {"id":1,"color":"green","x":4,"y":1}
+      ],
+      "blocks": [],
+      "igloo": [{"x":3,"y":4}],
+      "fish": [],
+      "rewinds": 3,
+      "solution": [
+        {"penguin":0,"dir":"right"},
+        {"penguin":1,"dir":"down"},
+        {"penguin":0,"dir":"down"}
+      ]
+    },
+    {
+      "id": "w1_l02",
+      "world": 1,
+      "level": 2,
+      "par": 4,
+      "hint": "Penguins stick together when they touch. Get them both to the igloo!",
+      "tiles": [
+        [1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,1],
+        [1,0,1,1,0,0,1],
+        [1,0,0,0,0,0,1],
+        [1,0,0,7,0,0,1],
+        [1,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1]
+      ],
+      "penguins": [
+        {"id":0,"color":"blue","x":1,"y":2},
+        {"id":1,"color":"blue","x":5,"y":4}
+      ],
+      "blocks": [],
+      "igloo": [{"x":3,"y":4}],
+      "fish": [],
+      "rewinds": 3,
+      "solution": [
+        {"penguin":0,"dir":"down"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":1,"dir":"left"},
+        {"penguin":0,"dir":"right"}
+      ]
+    },
+    {
+      "id": "w1_l03",
+      "world": 1,
+      "level": 3,
+      "par": 5,
+      "hint": "Green can only move up and down. Plan ahead!",
+      "tiles": [
+        [1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,1],
+        [1,0,1,0,1,0,1],
+        [1,0,0,0,0,0,1],
+        [1,0,1,0,1,0,1],
+        [1,0,0,7,0,0,1],
+        [1,1,1,1,1,1,1]
+      ],
+      "penguins": [
+        {"id":0,"color":"blue","x":1,"y":1},
+        {"id":1,"color":"green","x":5,"y":1}
+      ],
+      "blocks": [],
+      "igloo": [{"x":3,"y":5}],
+      "fish": [{"x":3,"y":1}],
+      "rewinds": 3,
+      "solution": [
+        {"penguin":0,"dir":"right"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":1,"dir":"down"},
+        {"penguin":0,"dir":"down"},
+        {"penguin":1,"dir":"down"}
+      ]
+    },
+    {
+      "id": "w1_l04",
+      "world": 1,
+      "level": 4,
+      "par": 5,
+      "hint": "Use walls to steer the penguins toward each other.",
+      "tiles": [
+        [1,1,1,1,1,1,1,1],
+        [1,0,0,1,0,0,0,1],
+        [1,0,0,1,0,0,0,1],
+        [1,0,0,0,0,0,0,1],
+        [1,0,0,1,0,0,0,1],
+        [1,0,0,0,7,0,0,1],
+        [1,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1]
+      ],
+      "penguins": [
+        {"id":0,"color":"blue","x":1,"y":1},
+        {"id":1,"color":"blue","x":6,"y":6}
+      ],
+      "blocks": [],
+      "igloo": [{"x":4,"y":5}],
+      "fish": [],
+      "rewinds": 3,
+      "solution": [
+        {"penguin":0,"dir":"down"},
+        {"penguin":0,"dir":"down"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":1,"dir":"up"},
+        {"penguin":0,"dir":"right"}
+      ]
+    },
+    {
+      "id": "w1_l05",
+      "world": 1,
+      "level": 5,
+      "par": 6,
+      "hint": "Three penguins, one igloo. Order matters!",
+      "tiles": [
+        [1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,0,1],
+        [1,0,1,1,1,0,0,1],
+        [1,0,0,0,0,0,0,1],
+        [1,0,0,7,0,0,0,1],
+        [1,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1]
+      ],
+      "penguins": [
+        {"id":0,"color":"blue","x":1,"y":1},
+        {"id":1,"color":"green","x":6,"y":1},
+        {"id":2,"color":"blue","x":1,"y":6}
+      ],
+      "blocks": [],
+      "igloo": [{"x":3,"y":4}],
+      "fish": [],
+      "rewinds": 3,
+      "solution": [
+        {"penguin":2,"dir":"right"},
+        {"penguin":2,"dir":"right"},
+        {"penguin":1,"dir":"down"},
+        {"penguin":0,"dir":"down"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":1,"dir":"down"}
+      ]
+    },
+    {
+      "id": "w1_l06",
+      "world": 1,
+      "level": 6,
+      "par": 6,
+      "hint": "When penguins clump, they share movement rules!",
+      "tiles": [
+        [1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,0,1],
+        [1,0,1,0,0,1,0,1],
+        [1,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,1],
+        [1,0,0,7,0,0,0,1],
+        [1,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1]
+      ],
+      "penguins": [
+        {"id":0,"color":"blue","x":1,"y":1},
+        {"id":1,"color":"green","x":6,"y":1},
+        {"id":2,"color":"blue","x":6,"y":6}
+      ],
+      "blocks": [],
+      "igloo": [{"x":3,"y":5}],
+      "fish": [{"x":5,"y":3}],
+      "rewinds": 3,
+      "solution": [
+        {"penguin":1,"dir":"down"},
+        {"penguin":0,"dir":"down"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":2,"dir":"up"},
+        {"penguin":0,"dir":"down"},
+        {"penguin":2,"dir":"left"}
+      ]
+    },
+    {
+      "id": "w1_l07",
+      "world": 1,
+      "level": 7,
+      "par": 7,
+      "hint": "Blue moves 4 directions. Green only up/down. Combine them wisely.",
+      "tiles": [
+        [1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,1,0,0,0,1],
+        [1,0,1,0,0,0,1,0,1],
+        [1,0,0,0,1,0,0,0,1],
+        [1,0,1,0,0,0,1,0,1],
+        [1,0,0,0,1,0,0,0,1],
+        [1,0,0,0,0,7,0,0,1],
+        [1,0,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1,1]
+      ],
+      "penguins": [
+        {"id":0,"color":"blue","x":1,"y":1},
+        {"id":1,"color":"green","x":7,"y":7}
+      ],
+      "blocks": [],
+      "igloo": [{"x":5,"y":6}],
+      "fish": [],
+      "rewinds": 3,
+      "solution": [
+        {"penguin":0,"dir":"right"},
+        {"penguin":0,"dir":"down"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":1,"dir":"up"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":0,"dir":"down"},
+        {"penguin":1,"dir":"up"}
+      ]
+    },
+    {
+      "id": "w1_l08",
+      "world": 1,
+      "level": 8,
+      "par": 7,
+      "hint": "Collect the fish for extra rewinds before heading to the igloo.",
+      "tiles": [
+        [1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,0,0,1],
+        [1,0,1,1,0,1,1,0,1],
+        [1,0,0,0,0,0,0,0,1],
+        [1,0,1,1,0,1,1,0,1],
+        [1,0,0,0,0,0,0,0,1],
+        [1,0,0,0,7,0,0,0,1],
+        [1,0,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1,1]
+      ],
+      "penguins": [
+        {"id":0,"color":"blue","x":1,"y":1},
+        {"id":1,"color":"blue","x":7,"y":7}
+      ],
+      "blocks": [],
+      "igloo": [{"x":4,"y":6}],
+      "fish": [{"x":4,"y":1},{"x":4,"y":7}],
+      "rewinds": 3,
+      "solution": [
+        {"penguin":0,"dir":"right"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":1,"dir":"left"},
+        {"penguin":1,"dir":"left"},
+        {"penguin":0,"dir":"down"},
+        {"penguin":1,"dir":"up"}
+      ]
+    },
+    {
+      "id": "w1_l09",
+      "world": 1,
+      "level": 9,
+      "par": 8,
+      "hint": "Many paths, one solution. Don't let the clump get stuck!",
+      "tiles": [
+        [1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,0,0,0,1],
+        [1,0,1,0,1,1,0,1,0,1],
+        [1,0,0,0,0,0,0,0,0,1],
+        [1,0,1,0,1,1,0,1,0,1],
+        [1,0,0,0,0,0,0,0,0,1],
+        [1,0,1,0,1,1,0,1,0,1],
+        [1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,7,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1]
+      ],
+      "penguins": [
+        {"id":0,"color":"blue","x":1,"y":1},
+        {"id":1,"color":"green","x":8,"y":1}
+      ],
+      "blocks": [],
+      "igloo": [{"x":4,"y":8}],
+      "fish": [{"x":4,"y":4}],
+      "rewinds": 3,
+      "solution": [
+        {"penguin":0,"dir":"right"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":1,"dir":"down"},
+        {"penguin":1,"dir":"down"},
+        {"penguin":0,"dir":"down"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":1,"dir":"down"}
+      ]
+    },
+    {
+      "id": "w1_l10",
+      "world": 1,
+      "level": 10,
+      "par": 9,
+      "hint": "The finale of Ice Shelf. Three penguins, complex walls. Think 2 moves ahead!",
+      "tiles": [
+        [1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,1,0,0,0,0,1],
+        [1,0,1,0,0,0,1,0,0,1],
+        [1,0,0,0,1,0,0,0,0,1],
+        [1,1,0,1,0,0,1,0,1,1],
+        [1,0,0,0,0,0,0,0,0,1],
+        [1,0,1,0,1,0,1,0,0,1],
+        [1,0,0,0,0,7,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1]
+      ],
+      "penguins": [
+        {"id":0,"color":"blue","x":1,"y":1},
+        {"id":1,"color":"green","x":8,"y":1},
+        {"id":2,"color":"blue","x":4,"y":8}
+      ],
+      "blocks": [],
+      "igloo": [{"x":5,"y":7}],
+      "fish": [{"x":5,"y":4}],
+      "rewinds": 3,
+      "solution": [
+        {"penguin":0,"dir":"down"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":1,"dir":"down"},
+        {"penguin":0,"dir":"right"},
+        {"penguin":1,"dir":"down"},
+        {"penguin":2,"dir":"right"},
+        {"penguin":0,"dir":"down"},
+        {"penguin":1,"dir":"down"},
+        {"penguin":2,"dir":"up"}
+      ]
+    }
+  ]
+}
