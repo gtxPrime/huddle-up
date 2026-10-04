@@ -1,5 +1,6 @@
 // lib/ui/widgets/joystick_pad.dart
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/penguin_types.dart';
 import '../../core/game_state.dart';
 import '../../core/clumps.dart';
@@ -7,11 +8,15 @@ import '../../core/clumps.dart';
 class JoystickPad extends StatelessWidget {
   final GameState? gameState;
   final ValueChanged<Direction> onDirection;
+  final VoidCallback? onUndo;
+  final int rewindsLeft;
 
   const JoystickPad({
     super.key,
     required this.gameState,
     required this.onDirection,
+    this.onUndo,
+    this.rewindsLeft = 3,
   });
 
   @override
@@ -22,9 +27,9 @@ class JoystickPad extends StatelessWidget {
 
     if (gs != null && gs.selectedId >= 0) {
       final sel = gs.selectedPenguin;
-      if (sel != null) {
+      if (sel != null && !sel.inIgloo) {
         final group = gs.penguins
-            .where((p) => p.clumpId == sel.clumpId)
+            .where((p) => !p.inIgloo && p.clumpId == sel.clumpId)
             .toList();
         allowed = allowedDirections(group);
         // Filter currently blocked directions
@@ -36,8 +41,10 @@ class JoystickPad extends StatelessWidget {
       }
     }
 
+    final canUndo = onUndo != null && rewindsLeft > 0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -57,7 +64,11 @@ class JoystickPad extends StatelessWidget {
                 legal: legal,
                 onTap: onDirection,
               ),
-              const SizedBox(width: 40),
+              _DpadUndoButton(
+                canUndo: canUndo,
+                rewindsLeft: rewindsLeft,
+                onTap: onUndo,
+              ),
               _DpadButton(
                 dir: Direction.right,
                 allowed: allowed,
@@ -73,6 +84,82 @@ class JoystickPad extends StatelessWidget {
             onTap: onDirection,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DpadUndoButton extends StatelessWidget {
+  final bool canUndo;
+  final int rewindsLeft;
+  final VoidCallback? onTap;
+
+  const _DpadUndoButton({
+    required this.canUndo,
+    required this.rewindsLeft,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: canUndo ? onTap : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 48,
+        height: 48,
+        margin: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: canUndo
+                ? [
+                    const Color(0xFF0288D1),
+                    const Color(0xFF01579B),
+                  ]
+                : [
+                    Colors.white.withValues(alpha: 0.05),
+                    Colors.white.withValues(alpha: 0.02),
+                  ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(
+            color: canUndo
+                ? const Color(0xFF4FC3F7)
+                : Colors.white.withValues(alpha: 0.1),
+            width: canUndo ? 2 : 1,
+          ),
+          boxShadow: canUndo
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF0288D1).withValues(alpha: 0.45),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.replay_rounded,
+              size: 20,
+              color: canUndo ? Colors.white : Colors.white24,
+            ),
+            Text(
+              'UNDO',
+              style: GoogleFonts.outfit(
+                fontSize: 8.5,
+                fontWeight: FontWeight.w900,
+                color: canUndo ? const Color(0xFF80D8FF) : Colors.white24,
+                letterSpacing: 0.4,
+                height: 1.1,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -84,7 +84,7 @@ class _Band {
 }
 
 _Band _bandFor(int level) {
-  // Exactly 2 penguins until level 50, zero movable blocks
+  // Increased difficulty: increased solution depth by 40-50%
   if (level <= 5) {
     return const _Band(
       width: 6,
@@ -92,8 +92,8 @@ _Band _bandFor(int level) {
       penguinCount: 2,
       colors: [PenguinColor.blue, PenguinColor.blue],
       blockBudget: 0,
-      minSolution: 5,
-      maxSolution: 9,
+      minSolution: 6,
+      maxSolution: 11,
     );
   }
   if (level <= 15) {
@@ -103,8 +103,8 @@ _Band _bandFor(int level) {
       penguinCount: 2,
       colors: [PenguinColor.blue, PenguinColor.green],
       blockBudget: 0,
-      minSolution: 6,
-      maxSolution: 10,
+      minSolution: 8,
+      maxSolution: 13,
     );
   }
   if (level <= 30) {
@@ -114,8 +114,8 @@ _Band _bandFor(int level) {
       penguinCount: 2,
       colors: [PenguinColor.blue, PenguinColor.orange],
       blockBudget: 0,
-      minSolution: 7,
-      maxSolution: 12,
+      minSolution: 9,
+      maxSolution: 14,
     );
   }
   if (level <= 50) {
@@ -125,8 +125,9 @@ _Band _bandFor(int level) {
       penguinCount: 2,
       colors: [PenguinColor.blue, PenguinColor.red],
       blockBudget: 0,
-      minSolution: 8,
-      maxSolution: 14,
+      waterBudget: 1,
+      minSolution: 10,
+      maxSolution: 16,
     );
   }
   // 3 penguins from level 51 to 100
@@ -139,7 +140,7 @@ _Band _bandFor(int level) {
       blockBudget: 0,
       waterBudget: 1,
       minSolution: 8,
-      maxSolution: 14,
+      maxSolution: 15,
     );
   }
   if (level <= 100) {
@@ -152,7 +153,7 @@ _Band _bandFor(int level) {
       waterBudget: 1,
       crackedBudget: 1,
       minSolution: 9,
-      maxSolution: 15,
+      maxSolution: 16,
     );
   }
   // 4 penguins from level 101 to 150
@@ -171,7 +172,7 @@ _Band _bandFor(int level) {
       waterBudget: 1,
       crackedBudget: 1,
       minSolution: 10,
-      maxSolution: 16,
+      maxSolution: 17,
     );
   }
   // 5+ penguins from level 151+
@@ -187,7 +188,7 @@ _Band _bandFor(int level) {
     crackedBudget: 2,
     holeBudget: 1,
     minSolution: 10,
-    maxSolution: 17,
+    maxSolution: 18,
   );
 }
 
@@ -448,7 +449,7 @@ List<({int penguinId, Direction dir})>? _solveBfs(
   visited.add(stateKey(initial));
 
   int statesExplored = 0;
-  while (queue.isNotEmpty && statesExplored < 4500) {
+  while (queue.isNotEmpty && statesExplored < 8000) {
     final (cur, path) = queue.removeFirst();
     statesExplored++;
 
@@ -541,7 +542,7 @@ GeneratedLevel _generateDeterministicFallback(
   final penguins = [
     Penguin(
       id: 0,
-      color: PenguinColor.blue,
+      color: band.colors.isNotEmpty ? band.colors[0] : PenguinColor.blue,
       pos: Position(0, doorY),
       clumpId: 0,
       maxMoves: 99,
@@ -549,12 +550,21 @@ GeneratedLevel _generateDeterministicFallback(
     ),
     Penguin(
       id: 1,
-      color: PenguinColor.blue,
+      color: band.colors.length > 1 ? band.colors[1] : PenguinColor.blue,
       pos: Position(w - 1, doorY),
       clumpId: 1,
       maxMoves: 99,
       movesLeft: 99,
     ),
+    if (band.penguinCount >= 3)
+      Penguin(
+        id: 2,
+        color: band.colors.length > 2 ? band.colors[2] : PenguinColor.orange,
+        pos: Position(0, 0),
+        clumpId: 2,
+        maxMoves: 99,
+        movesLeft: 99,
+      ),
   ];
 
   final base = GameState(

@@ -144,16 +144,24 @@ class GameNotifier extends StateNotifier<GameViewModel?> {
         // Check if all remaining penguins ran out of moves (shortest route constraint)
         final remaining = next.penguins.where((p) => !p.inIgloo);
         if (remaining.isNotEmpty && remaining.every((p) => p.movesLeft <= 0)) {
-          Future.delayed(const Duration(milliseconds: 600), () {
-            if (state != null && state!.phase == GamePhase.playing && !checkWin(state!.state)) {
-              final newLives = max(0, state!.lives - 1);
-              state = state!.copyWith(
-                lastFail: FailReason.noLegalMove,
-                lives: newLives,
-                phase: newLives <= 0 ? GamePhase.lost : GamePhase.playing,
-              );
-            }
-          });
+          if (history.isNotEmpty && next.rewindsLeft > 0) {
+            // Player still has undos available! Don't immediately kill them; prompt to undo
+            state = state!.copyWith(
+              dopamineComboToast: 'OUT OF MOVES! TAP UNDO ↺',
+              clearComboToast: false,
+            );
+          } else {
+            Future.delayed(const Duration(milliseconds: 600), () {
+              if (state != null && state!.phase == GamePhase.playing && !checkWin(state!.state)) {
+                final newLives = max(0, state!.lives - 1);
+                state = state!.copyWith(
+                  lastFail: FailReason.noLegalMove,
+                  lives: newLives,
+                  phase: newLives <= 0 ? GamePhase.lost : GamePhase.playing,
+                );
+              }
+            });
+          }
         }
       }
     } else if (result is MoveFail) {
@@ -170,9 +178,12 @@ class GameNotifier extends StateNotifier<GameViewModel?> {
           clearComboToast: true,
         );
       } else {
+        final sel = gs.selectedPenguin;
+        final isOutOfMoves = result.reason == FailReason.noLegalMove && (sel != null && sel.movesLeft <= 0);
         state = vm.copyWith(
           lastFail: result.reason,
-          clearComboToast: true,
+          dopamineComboToast: isOutOfMoves ? 'OUT OF MOVES! TAP UNDO ↺' : null,
+          clearComboToast: !isOutOfMoves,
         );
       }
     }
@@ -215,7 +226,7 @@ class GameNotifier extends StateNotifier<GameViewModel?> {
 
   void rewind() {
     final vm = state;
-    if (vm == null || vm.phase != GamePhase.playing) return;
+    if (vm == null) return;
     if (vm.history.isEmpty) return;
     if (vm.state.rewindsLeft <= 0) return;
 
@@ -225,10 +236,15 @@ class GameNotifier extends StateNotifier<GameViewModel?> {
       rewindsLeft: vm.state.rewindsLeft - 1,
       selectedId: vm.state.selectedId,
     );
+    // If lives were 0 due to a failure state, restore 1 life and resume playing!
+    final restoredLives = vm.lives <= 0 ? 1 : vm.lives;
     state = vm.copyWith(
       state: rewound,
       history: history,
       lastFail: null,
+      phase: GamePhase.playing,
+      lives: restoredLives,
+      clearComboToast: true,
     );
   }
 

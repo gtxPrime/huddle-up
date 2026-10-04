@@ -232,7 +232,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
                       const SizedBox(width: 8),
 
-                      // Right side: D-Pad Controls
+                      // Right side: D-Pad Controls with center Undo button
                       JoystickPad(
                         gameState: gs,
                         onDirection: (dir) {
@@ -242,6 +242,14 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                           AudioService.playMove();
                           ref.read(gameProvider.notifier).move(dir);
                         },
+                        onUndo: () {
+                          if (GameStorage.isHapticsEnabled()) {
+                            HapticFeedback.lightImpact();
+                          }
+                          AudioService.playTap();
+                          ref.read(gameProvider.notifier).rewind();
+                        },
+                        rewindsLeft: gs.rewindsLeft,
                       ),
                     ],
                   ),
@@ -603,7 +611,11 @@ class _EmergencyRescueOverlayState extends State<_EmergencyRescueOverlay> {
               const SizedBox(height: 14),
 
               Text(
-                _countdown > 0 ? 'CRACKED ICE! RESCUE HUDDLE!' : title,
+                isOutOfMoves
+                    ? 'OUT OF MOVES! RESCUE?'
+                    : (isOutOfTime
+                        ? 'TIME EXPIRED! RESCUE?'
+                        : (_countdown > 0 ? 'CRACKED ICE! RESCUE HUDDLE!' : title)),
                 style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
@@ -694,34 +706,37 @@ class _EmergencyRescueOverlayState extends State<_EmergencyRescueOverlay> {
 
               const SizedBox(height: 14),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 6,
+                runSpacing: 4,
                 children: [
-                  if (widget.onRewind != null) ...[
+                  if (widget.onRewind != null)
                     TextButton.icon(
                       icon: const Icon(Icons.replay_rounded,
                           size: 14, color: Color(0xFF4FC3F7)),
                       label: Text('Undo Move',
                           style: GoogleFonts.outfit(
                               color: const Color(0xFF4FC3F7),
-                              fontWeight: FontWeight.bold)),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12.5)),
                       onPressed: widget.onRewind,
                     ),
-                    const SizedBox(width: 8),
-                  ],
                   TextButton.icon(
                     icon: const Icon(Icons.restart_alt_rounded,
                         size: 14, color: Colors.white60),
                     label: Text('Restart Level',
-                        style: GoogleFonts.outfit(color: Colors.white60)),
+                        style: GoogleFonts.outfit(
+                            color: Colors.white60, fontSize: 12.5)),
                     onPressed: widget.onRestart,
                   ),
-                  const SizedBox(width: 8),
                   TextButton.icon(
                     icon: const Icon(Icons.home_rounded,
                         size: 14, color: Colors.white60),
                     label: Text('Levels',
-                        style: GoogleFonts.outfit(color: Colors.white60)),
+                        style: GoogleFonts.outfit(
+                            color: Colors.white60, fontSize: 12.5)),
                     onPressed: widget.onMenu,
                   ),
                 ],
