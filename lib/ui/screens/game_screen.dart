@@ -644,12 +644,16 @@ class _EmergencyRescueOverlayState extends State<_EmergencyRescueOverlay> {
                       const Icon(Icons.local_fire_department_rounded,
                           color: Colors.orangeAccent, size: 13),
                       const SizedBox(width: 6),
-                      Text(
-                        'Watch ad to protect your $streak Win Streak!',
-                        style: GoogleFonts.outfit(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orangeAccent,
+                      Flexible(
+                        child: Text(
+                          'Protect your $streak Win Streak!',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orangeAccent,
+                          ),
                         ),
                       ),
                     ],

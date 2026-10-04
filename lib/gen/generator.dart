@@ -84,7 +84,6 @@ class _Band {
 }
 
 _Band _bandFor(int level) {
-  // Enhanced difficulty: higher minimum solution depth
   if (level <= 5) {
     return const _Band(
       width: 6,
@@ -103,42 +102,51 @@ _Band _bandFor(int level) {
       penguinCount: 2,
       colors: [PenguinColor.blue, PenguinColor.green],
       blockBudget: 0,
-      minSolution: 9,
-      maxSolution: 15,
+      holeBudget: 1,
+      minSolution: 8,
+      maxSolution: 14,
     );
   }
   if (level <= 30) {
+    // Levels 16-30 (The 20s): Enlarged 8x7 map! Stone obstacles, holes, cracked ice
     return const _Band(
-      width: 7,
-      height: 6,
+      width: 8,
+      height: 7,
       penguinCount: 2,
       colors: [PenguinColor.blue, PenguinColor.orange],
-      blockBudget: 0,
-      minSolution: 10,
+      blockBudget: 1,
+      holeBudget: 2,
+      crackedBudget: 1,
+      minSolution: 8,
       maxSolution: 16,
     );
   }
   if (level <= 50) {
+    // Levels 31-50: 8x8 map!
     return const _Band(
-      width: 7,
-      height: 7,
+      width: 8,
+      height: 8,
       penguinCount: 2,
       colors: [PenguinColor.blue, PenguinColor.red],
-      blockBudget: 0,
+      blockBudget: 1,
       waterBudget: 1,
-      minSolution: 12,
-      maxSolution: 18,
+      holeBudget: 2,
+      crackedBudget: 2,
+      minSolution: 9,
+      maxSolution: 17,
     );
   }
   // 3 penguins from level 51 to 100
   if (level <= 75) {
     return const _Band(
-      width: 7,
-      height: 7,
+      width: 8,
+      height: 8,
       penguinCount: 3,
       colors: [PenguinColor.blue, PenguinColor.green, PenguinColor.orange],
-      blockBudget: 0,
+      blockBudget: 1,
       waterBudget: 1,
+      holeBudget: 2,
+      crackedBudget: 2,
       minSolution: 8,
       maxSolution: 16,
     );
@@ -146,80 +154,50 @@ _Band _bandFor(int level) {
   if (level <= 100) {
     return const _Band(
       width: 8,
-      height: 7,
+      height: 8,
       penguinCount: 3,
       colors: [PenguinColor.blue, PenguinColor.red, PenguinColor.yellow],
-      blockBudget: 0,
+      blockBudget: 1,
       waterBudget: 1,
-      crackedBudget: 1,
+      holeBudget: 2,
+      crackedBudget: 2,
+      minSolution: 9,
+      maxSolution: 17,
+    );
+  }
+  // 4 penguins from level 101 to 150
+  if (level <= 150) {
+    return const _Band(
+      width: 9,
+      height: 8,
+      penguinCount: 4,
+      colors: [
+        PenguinColor.blue,
+        PenguinColor.green,
+        PenguinColor.orange,
+        PenguinColor.purple,
+      ],
+      blockBudget: 1,
+      waterBudget: 1,
+      holeBudget: 2,
+      crackedBudget: 2,
       minSolution: 9,
       maxSolution: 18,
-    );
-  }
-  // 4 penguins from level 101 to 150
-  if (level <= 150) {
-    return const _Band(
-      width: 8,
-      height: 8,
-      penguinCount: 4,
-      colors: [
-        PenguinColor.blue,
-        PenguinColor.green,
-        PenguinColor.orange,
-        PenguinColor.purple,
-      ],
-      blockBudget: 1,
-      waterBudget: 1,
-      crackedBudget: 1,
-      minSolution: 10,
-      maxSolution: 20,
-    );
-  }
-  if (level <= 100) {
-    return const _Band(
-      width: 8,
-      height: 7,
-      penguinCount: 3,
-      colors: [PenguinColor.blue, PenguinColor.red, PenguinColor.yellow],
-      blockBudget: 0,
-      waterBudget: 1,
-      crackedBudget: 1,
-      minSolution: 9,
-      maxSolution: 16,
-    );
-  }
-  // 4 penguins from level 101 to 150
-  if (level <= 150) {
-    return const _Band(
-      width: 8,
-      height: 8,
-      penguinCount: 4,
-      colors: [
-        PenguinColor.blue,
-        PenguinColor.green,
-        PenguinColor.orange,
-        PenguinColor.purple,
-      ],
-      blockBudget: 1,
-      waterBudget: 1,
-      crackedBudget: 1,
-      minSolution: 10,
-      maxSolution: 17,
     );
   }
   // 5+ penguins from level 151+
   final extra = min((level - 151) ~/ 30, 2);
   final count = min(5 + extra, 7);
   return _Band(
-    width: min(8 + extra, 10),
-    height: min(8 + extra, 10),
+    width: min(9 + extra, 10),
+    height: min(9 + extra, 10),
     penguinCount: count,
     colors: PenguinColor.values,
     blockBudget: 1,
     waterBudget: 2,
     crackedBudget: 2,
-    holeBudget: 1,
-    minSolution: 10,
+    holeBudget: 2,
+    minSolution: 9,
     maxSolution: 18,
   );
 }
@@ -235,8 +213,8 @@ GeneratedLevel? _tryGenerate(
   // 1. Initialize grid: all floor tiles (NO edge walls!)
   final tiles = List.generate(h, (_) => List.filled(w, TileType.floor));
 
-  // 2. Select a level archetype inspired by Handshake / Sokoban corridor layouts
-  final archetype = rng.nextInt(4);
+  // 2. Select from 8 diverse level archetypes to prevent repetitive layouts
+  final archetype = rng.nextInt(8);
 
   switch (archetype) {
     case 0:
@@ -245,14 +223,13 @@ GeneratedLevel? _tryGenerate(
       for (int y = 0; y < h; y++) {
         tiles[y][divX] = TileType.wall;
       }
-      // Carve 1 or 2 door passages
-      final door1 = rng.nextInt(h);
+      final door1 = 1 + rng.nextInt(max(1, h - 2));
       tiles[door1][divX] = TileType.floor;
       if (h >= 5 && rng.nextBool()) {
-        final door2 = (door1 + 2 + rng.nextInt(h - 2)) % h;
+        final door2 = (door1 + 2) % (h - 2) + 1;
         tiles[door2][divX] = TileType.floor;
       }
-      // Add 1-2 small internal obstacles
+      // Interior stone pillars on wings
       if (w >= 6 && h >= 5) {
         final ox1 = rng.nextInt(divX);
         final oy1 = 1 + rng.nextInt(h - 2);
@@ -264,38 +241,55 @@ GeneratedLevel? _tryGenerate(
       break;
 
     case 1:
-      // U-Shape / Horseshoe (Screenshot 2): Central wall block in top/middle
-      final blkW = max(1, w - 3);
-      final blkH = max(1, h - 3);
+      // Fortress Ring / Center Island: Central stone structure with loop around it
+      final blkW = max(2, min(3, w - 4));
+      final blkH = max(2, min(3, h - 4));
       final startX = (w - blkW) ~/ 2;
+      final startY = (h - blkH) ~/ 2;
       for (int y = 0; y < blkH; y++) {
         for (int x = 0; x < blkW; x++) {
-          tiles[y][startX + x] = TileType.wall;
+          tiles[startY + y][startX + x] = TileType.wall;
         }
+      }
+      // Corner deflection stones
+      if (rng.nextBool() && startX > 1 && startY > 1) {
+        tiles[1][1] = TileType.wall;
+        tiles[h - 2][w - 2] = TileType.wall;
       }
       break;
 
     case 2:
-      // S-Curve / Winding Corridors: Horizontal dividers with alternating gaps
-      final y1 = max(1, h ~/ 3);
-      for (int x = 0; x < w - 1; x++) {
-        tiles[y1][x] = TileType.wall; // gap at right
-      }
-      if (h >= 6) {
+      // Serpentine Winding S-Corridor: randomized orientation (horizontal or vertical)
+      if (rng.nextBool()) {
+        // Horizontal snake
+        final y1 = max(1, h ~/ 3);
         final y2 = min(h - 2, 2 * h ~/ 3);
+        for (int x = 0; x < w - 2; x++) {
+          tiles[y1][x] = TileType.wall; // gap at right
+        }
         if (y2 > y1 + 1) {
-          for (int x = 1; x < w; x++) {
+          for (int x = 2; x < w; x++) {
             tiles[y2][x] = TileType.wall; // gap at left
+          }
+        }
+      } else {
+        // Vertical snake
+        final x1 = max(1, w ~/ 3);
+        final x2 = min(w - 2, 2 * w ~/ 3);
+        for (int y = 0; y < h - 2; y++) {
+          tiles[y][x1] = TileType.wall; // gap at bottom
+        }
+        if (x2 > x1 + 1) {
+          for (int y = 2; y < h; y++) {
+            tiles[y][x2] = TileType.wall; // gap at top
           }
         }
       }
       break;
 
     case 3:
-    default:
-      // Pillar Courtyard / Loop Crossroad (Screenshots 3 & 4):
-      // Internal stone pillars creating loop corridors around them
-      final pillarCount = min(3, max(1, (w * h) ~/ 12));
+      // Staggered Stone Pillars / Stepping Labyrinth
+      final pillarCount = min(6, max(3, (w * h) ~/ 10));
       for (int i = 0; i < pillarCount; i++) {
         final px = 1 + rng.nextInt(max(1, w - 2));
         final py = 1 + rng.nextInt(max(1, h - 2));
@@ -305,9 +299,100 @@ GeneratedLevel? _tryGenerate(
         }
       }
       break;
+
+    case 4:
+      // L-Chamber / Split Corner Wings
+      final lx = w ~/ 2;
+      final ly = h ~/ 2;
+      for (int y = 0; y < ly; y++) {
+        tiles[y][lx] = TileType.wall;
+      }
+      for (int x = lx; x < w; x++) {
+        tiles[ly][x] = TileType.wall;
+      }
+      // Carve door passages in both arms
+      if (ly > 1) tiles[1][lx] = TileType.floor;
+      if (w - lx > 2) tiles[ly][lx + 1] = TileType.floor;
+      break;
+
+    case 5:
+      // Crossroads / Quad Chambers with open gates
+      final cx = w ~/ 2;
+      final cy = h ~/ 2;
+      for (int x = 0; x < w; x++) {
+        tiles[cy][x] = TileType.wall;
+      }
+      for (int y = 0; y < h; y++) {
+        tiles[y][cx] = TileType.wall;
+      }
+      // Open gates in cross arms
+      tiles[cy][max(1, cx ~/ 2)] = TileType.floor;
+      tiles[cy][min(w - 2, cx + (w - cx) ~/ 2)] = TileType.floor;
+      tiles[max(1, cy ~/ 2)][cx] = TileType.floor;
+      tiles[min(h - 2, cy + (h - cy) ~/ 2)][cx] = TileType.floor;
+      break;
+
+    case 6:
+      // Diagonal Baffles / Staggered Comb Teeth
+      final toothLen = max(2, min(3, w ~/ 3));
+      for (int x = 0; x < toothLen; x++) {
+        tiles[max(1, h ~/ 3)][x] = TileType.wall;
+      }
+      for (int x = w - toothLen; x < w; x++) {
+        tiles[min(h - 2, 2 * h ~/ 3)][x] = TileType.wall;
+      }
+      if (w >= 7) {
+        tiles[0][w ~/ 2] = TileType.wall;
+        tiles[h - 1][w ~/ 2] = TileType.wall;
+      }
+      break;
+
+    case 7:
+    default:
+      // The Atrium Courtyard: Perimeter box with entry gates
+      final cw = max(3, min(4, w - 2));
+      final ch = max(3, min(4, h - 2));
+      final ox = (w - cw) ~/ 2;
+      final oy = (h - ch) ~/ 2;
+      for (int x = ox; x < ox + cw; x++) {
+        tiles[oy][x] = TileType.wall;
+        tiles[oy + ch - 1][x] = TileType.wall;
+      }
+      for (int y = oy; y < oy + ch; y++) {
+        tiles[y][ox] = TileType.wall;
+        tiles[y][ox + cw - 1] = TileType.wall;
+      }
+      // Open north and south gates
+      tiles[oy][ox + cw ~/ 2] = TileType.floor;
+      tiles[oy + ch - 1][ox + cw ~/ 2] = TileType.floor;
+      break;
   }
 
-  // 3. Flood-fill check to ensure ONE main connected component of floor tiles
+  // 3. Prune dead-ends so all interior passable tiles have >= 2 passable neighbors
+  bool changed = true;
+  while (changed) {
+    changed = false;
+    for (int y = 1; y < h - 1; y++) {
+      for (int x = 1; x < w - 1; x++) {
+        if (tiles[y][x] != TileType.wall) {
+          int nonWall = 0;
+          for (final (dx, dy) in const [(0, -1), (0, 1), (-1, 0), (1, 0)]) {
+            final nx = x + dx;
+            final ny = y + dy;
+            if (nx >= 0 && nx < w && ny >= 0 && ny < h && tiles[ny][nx] != TileType.wall) {
+              nonWall++;
+            }
+          }
+          if (nonWall < 2) {
+            tiles[y][x] = TileType.wall;
+            changed = true;
+          }
+        }
+      }
+    }
+  }
+
+  // 4. Flood-fill check to ensure ONE main connected component of floor tiles
   final allFloor = <Position>[];
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
@@ -317,7 +402,7 @@ GeneratedLevel? _tryGenerate(
     }
   }
 
-  if (allFloor.length < 8) return null;
+  if (allFloor.length < 10) return null;
 
   // Pick a central seed for flood fill
   final centerRef = Position(w ~/ 2, h ~/ 2);
@@ -325,7 +410,7 @@ GeneratedLevel? _tryGenerate(
   final floodSeed = allFloor.first;
 
   final connected = _floodFill(tiles, floodSeed, w, h);
-  if (connected.length < 8) return null;
+  if (connected.length < 10) return null;
 
   // Turn disconnected floor pockets into walls
   for (int y = 0; y < h; y++) {
@@ -336,14 +421,14 @@ GeneratedLevel? _tryGenerate(
     }
   }
 
-  // 4. Place 1-tile Igloo on a well-connected floor tile near center/corridor
+  // 5. Place 1-tile Igloo on a well-connected floor tile near center/corridor
   final iglooCandidates = connected.toList()
     ..sort((a, b) => _dist(a, centerRef).compareTo(_dist(b, centerRef)));
   final iglooPos = iglooCandidates.first;
   tiles[iglooPos.y][iglooPos.x] = TileType.igloo;
   final meetingTiles = [iglooPos];
 
-  // 5. Candidate floor cells for penguins (excluding igloo)
+  // 6. Candidate floor cells for penguins (excluding igloo)
   final validFloors = connected.where((p) => p != iglooPos).toList();
   if (validFloors.length < band.penguinCount) return null;
 
@@ -378,12 +463,111 @@ GeneratedLevel? _tryGenerate(
     final clumpSet = penguins.map((p) => p.clumpId).toSet();
     if (clumpSet.length < band.penguinCount) continue;
 
+    // 7. Place Obstacles: Stones, Holes, Cracked Ice, and Ice Blocks
+    final candidateObstacleCells = validFloors
+        .where((p) =>
+            !candidatePositions.contains(p) &&
+            _dist(p, iglooPos) >= 1.5 &&
+            candidatePositions.every((cp) => _dist(p, cp) >= 1.5))
+        .toList()
+      ..shuffle(rng);
+
+    // Copy tiles to test obstacles
+    final workingTiles = tiles.map((row) => List<TileType>.from(row)).toList();
+    final blocks = <IceBlock>[];
+
+    // Helper: checks if all penguins can reach igloo through safe walkable tiles
+    bool canReachIgloo(List<List<TileType>> t) {
+      final visited = <Position>{iglooPos};
+      final q = Queue<Position>()..add(iglooPos);
+      while (q.isNotEmpty) {
+        final cur = q.removeFirst();
+        for (final (dx, dy) in const [(0, -1), (0, 1), (-1, 0), (1, 0)]) {
+          final nx = cur.x + dx;
+          final ny = cur.y + dy;
+          if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+            final np = Position(nx, ny);
+            if (!visited.contains(np)) {
+              final tile = t[ny][nx];
+              if (tile == TileType.floor ||
+                  tile == TileType.cracked ||
+                  tile == TileType.slippery ||
+                  tile == TileType.igloo ||
+                  tile == TileType.bridge) {
+                visited.add(np);
+                q.add(np);
+              }
+            }
+          }
+        }
+      }
+      return candidatePositions.every((p) => visited.contains(p));
+    }
+
+    // A. Place stone obstacles (TileType.wall)
+    if (levelNumber >= 16) {
+      final stoneBudget = min(2, max(0, candidateObstacleCells.length ~/ 6));
+      for (int s = 0; s < stoneBudget && candidateObstacleCells.isNotEmpty; s++) {
+        final cell = candidateObstacleCells.removeLast();
+        workingTiles[cell.y][cell.x] = TileType.wall;
+        // Verify no dead-ends and reachable
+        bool hasDeadEnd = false;
+        for (int y = 1; y < h - 1; y++) {
+          for (int x = 1; x < w - 1; x++) {
+            if (workingTiles[y][x] != TileType.wall) {
+              int nonWall = 0;
+              for (final (dx, dy) in const [(0, -1), (0, 1), (-1, 0), (1, 0)]) {
+                final nx = x + dx;
+                final ny = y + dy;
+                if (workingTiles[ny][nx] != TileType.wall) nonWall++;
+              }
+              if (nonWall < 2) {
+                hasDeadEnd = true;
+                break;
+              }
+            }
+          }
+          if (hasDeadEnd) break;
+        }
+        if (hasDeadEnd || !canReachIgloo(workingTiles)) {
+          workingTiles[cell.y][cell.x] = TileType.floor; // revert
+        }
+      }
+    }
+
+    // B. Place holes (TileType.hole)
+    if (band.holeBudget > 0 && candidateObstacleCells.isNotEmpty) {
+      final holeTarget = min(band.holeBudget, min(2, candidateObstacleCells.length ~/ 4));
+      for (int hc = 0; hc < holeTarget && candidateObstacleCells.isNotEmpty; hc++) {
+        final cell = candidateObstacleCells.removeLast();
+        workingTiles[cell.y][cell.x] = TileType.hole;
+        if (!canReachIgloo(workingTiles)) {
+          workingTiles[cell.y][cell.x] = TileType.floor; // revert
+        }
+      }
+    }
+
+    // C. Place cracked ice (TileType.cracked)
+    if (band.crackedBudget > 0 && candidateObstacleCells.isNotEmpty) {
+      final crackTarget = min(band.crackedBudget, min(2, candidateObstacleCells.length ~/ 3));
+      for (int cc = 0; cc < crackTarget && candidateObstacleCells.isNotEmpty; cc++) {
+        final cell = candidateObstacleCells.removeLast();
+        workingTiles[cell.y][cell.x] = TileType.cracked;
+      }
+    }
+
+    // D. Place sliding ice block (IceBlock)
+    if (band.blockBudget > 0 && candidateObstacleCells.isNotEmpty && rng.nextBool()) {
+      final cell = candidateObstacleCells.removeLast();
+      blocks.add(IceBlock(cell));
+    }
+
     final baseState = GameState(
       width: w,
       height: h,
-      tiles: tiles,
+      tiles: workingTiles,
       penguins: penguins,
-      blocks: const [],
+      blocks: blocks,
       igloo: meetingTiles,
       fish: const [],
       rewindsLeft: 3,
