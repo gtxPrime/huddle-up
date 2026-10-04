@@ -63,4 +63,53 @@ void main() {
       expect(checkWin(s), isTrue, reason: 'Lvl $lvl solution did not reach win condition');
     }
   });
+
+  test('Level 27 (The 20s) has 8x7 map, challenging moves, active obstacles, and no direct line of sight', () {
+    final level = generateLevel(27);
+    expect(level.initialState.width, equals(8));
+    expect(level.initialState.height, equals(7));
+    expect(level.solution.length >= 10, isTrue,
+        reason: 'Level 27 solution length should be challenging (>= 10), got ${level.solution.length}');
+
+    // Verify win condition
+    var s = level.initialState;
+    for (final step in level.solution) {
+      final res = tryMove(s.copyWith(selectedId: step.penguinId), step.penguinId, step.dir);
+      expect(res is MoveSuccess, isTrue);
+      s = (res as MoveSuccess).next;
+    }
+    expect(checkWin(s), isTrue);
+
+    // Verify penguins do not start on unobstructed line of sight to igloo
+    final igloo = level.initialState.igloo.first;
+    for (final p in level.initialState.penguins) {
+      if (p.pos.x == igloo.x) {
+        // Must have at least one wall or obstacle between them
+        final minY = p.pos.y < igloo.y ? p.pos.y : igloo.y;
+        final maxY = p.pos.y > igloo.y ? p.pos.y : igloo.y;
+        bool blocked = false;
+        for (int y = minY + 1; y < maxY; y++) {
+          if (level.initialState.tiles[y][p.pos.x] == TileType.wall ||
+              level.initialState.tiles[y][p.pos.x] == TileType.hole) {
+            blocked = true;
+            break;
+          }
+        }
+        expect(blocked, isTrue, reason: 'Penguin at ${p.pos} has unobstructed line of sight to igloo $igloo');
+      }
+      if (p.pos.y == igloo.y) {
+        final minX = p.pos.x < igloo.x ? p.pos.x : igloo.x;
+        final maxX = p.pos.x > igloo.x ? p.pos.x : igloo.x;
+        bool blocked = false;
+        for (int x = minX + 1; x < maxX; x++) {
+          if (level.initialState.tiles[p.pos.y][x] == TileType.wall ||
+              level.initialState.tiles[p.pos.y][x] == TileType.hole) {
+            blocked = true;
+            break;
+          }
+        }
+        expect(blocked, isTrue, reason: 'Penguin at ${p.pos} has unobstructed line of sight to igloo $igloo');
+      }
+    }
+  });
 }

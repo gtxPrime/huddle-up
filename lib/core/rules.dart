@@ -205,7 +205,7 @@ List<IceBlock>? _pushBlockChain(
     final to = from.translate(dx, dy);
     final idx = newBlocks.indexWhere((b) => b.pos == from);
     if (idx < 0) continue;
-    if (state.tileAt(to) == TileType.water) {
+    if (state.tileAt(to) == TileType.water || state.tileAt(to) == TileType.hole) {
       // Block sinks → becomes bridge, remove block
       newBlocks.removeAt(idx);
       // Note: tile update is handled in _applyTileEffects
@@ -285,10 +285,10 @@ MoveResult _applyTileEffects(GameState state) {
     }
   }
 
-  // Block-into-water → bridge tile
+  // Block-into-water or hole → bridge tile
   for (final blk in List.from(blocks)) {
     final t = state.tileAt(blk.pos);
-    if (t == TileType.water) {
+    if (t == TileType.water || t == TileType.hole) {
       tiles[blk.pos.y][blk.pos.x] = TileType.bridge;
       blocks.remove(blk);
     }

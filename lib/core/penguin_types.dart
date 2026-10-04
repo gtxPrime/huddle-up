@@ -79,8 +79,6 @@ const Set<Direction> _diagonals = {
   Direction.downLeft,
   Direction.downRight,
 };
-const Set<Direction> _upDown = {Direction.up, Direction.down};
-const Set<Direction> _leftRight = {Direction.left, Direction.right};
 
 const Map<PenguinColor, PenguinDef> kPenguinDefs = {
   PenguinColor.blue: PenguinDef(
@@ -92,16 +90,16 @@ const Map<PenguinColor, PenguinDef> kPenguinDefs = {
   ),
   PenguinColor.green: PenguinDef(
     color: PenguinColor.green,
-    allowedDirs: _upDown,
+    allowedDirs: _cardinals,
     moveKind: MoveKind.walk,
-    symbol: '↕',
+    symbol: '✚',
     displayColor: Color(0xFF4CAF50),
   ),
   PenguinColor.orange: PenguinDef(
     color: PenguinColor.orange,
-    allowedDirs: _leftRight,
+    allowedDirs: _cardinals,
     moveKind: MoveKind.walk,
-    symbol: '↔',
+    symbol: '✚',
     displayColor: Color(0xFFFF9800),
   ),
   PenguinColor.red: PenguinDef(

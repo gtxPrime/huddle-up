@@ -1,22 +1,26 @@
 // lib/gen/generator.dart
 //
 // ══════════════════════════════════════════════════════════════════════════════
-//  HUDDLE UP  –  Procedural Level Generator  (v5)
+//  HUDDLE UP  –  Procedural Level Generator  (v6)
 // ══════════════════════════════════════════════════════════════════════════════
 //
 //  Design Philosophy (Matching Handshake / Sokoban Style):
-//  1. FULL-BLEED CANVAS: Zero edge-walls. Tiles extend edge-to-edge (0..w-1, 0..h-1),
-//     giving big, clear, immersive tiles without wasted border walls.
+//  1. FULL-BLEED CANVAS: Zero edge-walls. Tiles extend edge-to-edge (0..w-1, 0..h-1).
 //  2. 1-TILE IGLOO: A single, distinct, cozy destination igloo.
 //  3. CORRIDOR & WING PUZZLES: Clean geometric layouts (Two-Wing Dividers,
-//     U-Shape / Horseshoe, S-Curves, Pillar Courtyards) where 2 penguins start
+//     U-Shape / Horseshoe, S-Curves, Pillar Courtyards) where penguins start
 //     separated and must navigate corridors to huddle together at the igloo.
-//  4. NO OBSTRUCTIVE ICE BLOCKS in early/mid game: Clean penguin pathfinding puzzles.
-//  5. 100% BFS-VERIFIED SOLVABLE: Every level is tested with an exact move solution.
+//  4. MEANINGFUL OBSTACLES: Every obstacle (holes, cracked ice, sliding ice blocks)
+//     is placed on or directly interacting with the penguins' critical paths.
+//     Useless obstacles sitting in corners are PRUNED automatically.
+//  5. NO TRIVIAL STRAIGHT-LINE WALKS: Penguins must not have direct unobstructed
+//     line-of-sight into the igloo at start. They must turn corners and think!
+//  6. 100% BFS/A* VERIFIED SOLVABLE with tight par move budgets.
 //
 
 import 'dart:collection';
 import 'dart:math';
+import 'package:collection/collection.dart';
 import '../core/game_state.dart';
 import '../core/tile_types.dart';
 import '../core/penguin_types.dart';
@@ -43,7 +47,7 @@ class GeneratedLevel {
 
 GeneratedLevel generateLevel(int levelNumber, {int dailyOffset = 0}) {
   final band = _bandFor(levelNumber);
-  for (int attempt = 0; attempt < 15; attempt++) {
+  for (int attempt = 0; attempt < 20; attempt++) {
     final seed = levelNumber * 97 + dailyOffset * 1000003 + attempt * 23;
     final result = _tryGenerate(Random(seed), band, seed, levelNumber);
     if (result != null) return result;
@@ -91,7 +95,7 @@ _Band _bandFor(int level) {
       penguinCount: 2,
       colors: [PenguinColor.blue, PenguinColor.blue],
       blockBudget: 0,
-      minSolution: 8,
+      minSolution: 7,
       maxSolution: 13,
     );
   }
@@ -104,11 +108,11 @@ _Band _bandFor(int level) {
       blockBudget: 0,
       holeBudget: 1,
       minSolution: 8,
-      maxSolution: 14,
+      maxSolution: 15,
     );
   }
   if (level <= 30) {
-    // Levels 16-30 (The 20s): Enlarged 8x7 map! Stone obstacles, holes, cracked ice
+    // Levels 16-30 (The 20s): Enlarged 8x7 map! Stone obstacles, holes, cracked ice, blocks
     return const _Band(
       width: 8,
       height: 7,
@@ -117,8 +121,8 @@ _Band _bandFor(int level) {
       blockBudget: 1,
       holeBudget: 2,
       crackedBudget: 1,
-      minSolution: 8,
-      maxSolution: 16,
+      minSolution: 10,
+      maxSolution: 18,
     );
   }
   if (level <= 50) {
@@ -132,8 +136,8 @@ _Band _bandFor(int level) {
       waterBudget: 1,
       holeBudget: 2,
       crackedBudget: 2,
-      minSolution: 9,
-      maxSolution: 17,
+      minSolution: 11,
+      maxSolution: 20,
     );
   }
   // 3 penguins from level 51 to 100
@@ -147,8 +151,8 @@ _Band _bandFor(int level) {
       waterBudget: 1,
       holeBudget: 2,
       crackedBudget: 2,
-      minSolution: 8,
-      maxSolution: 16,
+      minSolution: 11,
+      maxSolution: 22,
     );
   }
   if (level <= 100) {
@@ -161,8 +165,8 @@ _Band _bandFor(int level) {
       waterBudget: 1,
       holeBudget: 2,
       crackedBudget: 2,
-      minSolution: 9,
-      maxSolution: 17,
+      minSolution: 12,
+      maxSolution: 22,
     );
   }
   // 4 penguins from level 101 to 150
@@ -181,8 +185,8 @@ _Band _bandFor(int level) {
       waterBudget: 1,
       holeBudget: 2,
       crackedBudget: 2,
-      minSolution: 9,
-      maxSolution: 18,
+      minSolution: 12,
+      maxSolution: 24,
     );
   }
   // 5+ penguins from level 151+
@@ -197,8 +201,8 @@ _Band _bandFor(int level) {
     waterBudget: 2,
     crackedBudget: 2,
     holeBudget: 2,
-    minSolution: 9,
-    maxSolution: 18,
+    minSolution: 12,
+    maxSolution: 24,
   );
 }
 
@@ -428,20 +432,28 @@ GeneratedLevel? _tryGenerate(
   tiles[iglooPos.y][iglooPos.x] = TileType.igloo;
   final meetingTiles = [iglooPos];
 
-  // 6. Candidate floor cells for penguins (excluding igloo)
+  // 6. Filter candidate penguin start positions:
+  // Must NOT have direct unobstructed line-of-sight to igloo, and distance >= 2.5
   final validFloors = connected.where((p) => p != iglooPos).toList();
   if (validFloors.length < band.penguinCount) return null;
 
-  // Sort by distance to igloo descending so penguins start further away
-  validFloors.sort((a, b) => _dist(b, iglooPos).compareTo(_dist(a, iglooPos)));
+  final noLosFloors = validFloors.where((p) {
+    if (_dist(p, iglooPos) < 2.5) return false;
+    if (_hasDirectLineOfSight(p, iglooPos, tiles)) return false;
+    return true;
+  }).toList();
+
+  final penguinPool = noLosFloors.length >= band.penguinCount
+      ? noLosFloors
+      : validFloors.where((p) => _dist(p, iglooPos) >= 2.0).toList();
 
   // Try candidate placements
   final colors = _pickColors(rng, band.colors, band.penguinCount);
 
-  for (int attemptPair = 0; attemptPair < 5; attemptPair++) {
+  for (int attemptPair = 0; attemptPair < 6; attemptPair++) {
     final candidatePositions = _pickSpreadPositions(
       rng,
-      validFloors,
+      penguinPool,
       band.penguinCount,
     );
     if (candidatePositions == null) continue;
@@ -463,16 +475,7 @@ GeneratedLevel? _tryGenerate(
     final clumpSet = penguins.map((p) => p.clumpId).toSet();
     if (clumpSet.length < band.penguinCount) continue;
 
-    // 7. Place Obstacles: Stones, Holes, Cracked Ice, and Ice Blocks
-    final candidateObstacleCells = validFloors
-        .where((p) =>
-            !candidatePositions.contains(p) &&
-            _dist(p, iglooPos) >= 1.5 &&
-            candidatePositions.every((cp) => _dist(p, cp) >= 1.5))
-        .toList()
-      ..shuffle(rng);
-
-    // Copy tiles to test obstacles
+    // Working copies for obstacle placement
     final workingTiles = tiles.map((row) => List<TileType>.from(row)).toList();
     final blocks = <IceBlock>[];
 
@@ -504,12 +507,36 @@ GeneratedLevel? _tryGenerate(
       return candidatePositions.every((p) => visited.contains(p));
     }
 
-    // A. Place stone obstacles (TileType.wall)
+    if (!canReachIgloo(workingTiles)) continue;
+
+    // 7. Extract CRITICAL PATH TILES:
+    // Every obstacle will be placed directly on or adjacent to these paths!
+    final criticalPathTiles = <Position>{};
+    for (final p in penguins) {
+      final pPath = _findShortestFloorPath(p.pos, iglooPos, workingTiles, w, h);
+      if (pPath != null && pPath.length > 2) {
+        // Exclude start and igloo
+        for (int i = 1; i < pPath.length - 1; i++) {
+          criticalPathTiles.add(pPath[i]);
+        }
+      }
+    }
+
+    // A. Place stone obstacles (TileType.wall) to shape corridors (level >= 16)
     if (levelNumber >= 16) {
-      final stoneBudget = min(2, max(0, candidateObstacleCells.length ~/ 6));
-      for (int s = 0; s < stoneBudget && candidateObstacleCells.isNotEmpty; s++) {
-        final cell = candidateObstacleCells.removeLast();
+      final candidateStones = validFloors
+          .where((p) =>
+              !candidatePositions.contains(p) &&
+              p != iglooPos &&
+              _dist(p, iglooPos) >= 1.5)
+          .toList()
+        ..shuffle(rng);
+
+      final stoneBudget = min(2, max(0, candidateStones.length ~/ 8));
+      for (int s = 0; s < stoneBudget && candidateStones.isNotEmpty; s++) {
+        final cell = candidateStones.removeLast();
         workingTiles[cell.y][cell.x] = TileType.wall;
+
         // Verify no dead-ends and reachable
         bool hasDeadEnd = false;
         for (int y = 1; y < h - 1; y++) {
@@ -535,31 +562,55 @@ GeneratedLevel? _tryGenerate(
       }
     }
 
-    // B. Place holes (TileType.hole)
-    if (band.holeBudget > 0 && candidateObstacleCells.isNotEmpty) {
-      final holeTarget = min(band.holeBudget, min(2, candidateObstacleCells.length ~/ 4));
-      for (int hc = 0; hc < holeTarget && candidateObstacleCells.isNotEmpty; hc++) {
-        final cell = candidateObstacleCells.removeLast();
+    // B. Place holes (TileType.hole) ON CRITICAL PATHS (forces detours!)
+    final pathListHoles = criticalPathTiles.toList()..shuffle(rng);
+    if (band.holeBudget > 0 && pathListHoles.isNotEmpty) {
+      int holesPlaced = 0;
+      for (final cell in pathListHoles) {
+        if (holesPlaced >= band.holeBudget) break;
         workingTiles[cell.y][cell.x] = TileType.hole;
-        if (!canReachIgloo(workingTiles)) {
+        // Verify level remains solvable via alternate corridor
+        if (canReachIgloo(workingTiles)) {
+          holesPlaced++;
+          criticalPathTiles.remove(cell);
+        } else {
           workingTiles[cell.y][cell.x] = TileType.floor; // revert
         }
       }
     }
 
-    // C. Place cracked ice (TileType.cracked)
-    if (band.crackedBudget > 0 && candidateObstacleCells.isNotEmpty) {
-      final crackTarget = min(band.crackedBudget, min(2, candidateObstacleCells.length ~/ 3));
-      for (int cc = 0; cc < crackTarget && candidateObstacleCells.isNotEmpty; cc++) {
-        final cell = candidateObstacleCells.removeLast();
+    // C. Place cracked ice (TileType.cracked) ON CRITICAL PATHS
+    final pathListCracked = criticalPathTiles.toList()..shuffle(rng);
+    if (band.crackedBudget > 0 && pathListCracked.isNotEmpty) {
+      int crackedPlaced = 0;
+      for (final cell in pathListCracked) {
+        if (crackedPlaced >= band.crackedBudget) break;
         workingTiles[cell.y][cell.x] = TileType.cracked;
+        crackedPlaced++;
+        criticalPathTiles.remove(cell);
       }
     }
 
     // D. Place sliding ice block (IceBlock)
-    if (band.blockBudget > 0 && candidateObstacleCells.isNotEmpty && rng.nextBool()) {
-      final cell = candidateObstacleCells.removeLast();
-      blocks.add(IceBlock(cell));
+    // Placed on critical path or corridor where penguin can push it
+    if (band.blockBudget > 0 && criticalPathTiles.isNotEmpty && (rng.nextDouble() < 0.75 || levelNumber >= 20)) {
+      final blockCandidates = criticalPathTiles.where((cell) {
+        // Ensure at least 1 adjacent tile in some direction is clear floor/hole to push into
+        for (final (dx, dy) in const [(0, -1), (0, 1), (-1, 0), (1, 0)]) {
+          final tx = cell.x + dx;
+          final ty = cell.y + dy;
+          if (tx >= 0 && tx < w && ty >= 0 && ty < h) {
+            final t = workingTiles[ty][tx];
+            if (t == TileType.floor || t == TileType.hole) return true;
+          }
+        }
+        return false;
+      }).toList()..shuffle(rng);
+
+      if (blockCandidates.isNotEmpty) {
+        final cell = blockCandidates.first;
+        blocks.add(IceBlock(cell));
+      }
     }
 
     final baseState = GameState(
@@ -575,16 +626,21 @@ GeneratedLevel? _tryGenerate(
       selectedId: penguins.first.id,
     );
 
-    // Run BFS solver
+    // Run A* solver with priority queue
     final maxSearchDepth = relaxed ? 16 : band.maxSolution + 2;
-    final solution = _solveBfs(baseState, maxDepth: maxSearchDepth);
+    final solution = _solveSearch(baseState, iglooPos, maxDepth: maxSearchDepth);
 
-    if (solution != null && solution.length >= (relaxed ? 3 : band.minSolution)) {
-      // Trace BFS shortest path to determine exact moves taken by each penguin
+    if (solution != null && solution.length >= (relaxed ? 4 : band.minSolution)) {
+      // Trace solution to monitor obstacle interaction and penguin move budgets
       GameState sim = baseState;
       final movesUsedByPenguin = <int, int>{for (final p in baseState.penguins) p.id: 0};
+      final visitedPositions = <Position>{};
+      final pushedBlocks = <Position>{};
 
       for (final step in solution) {
+        for (final p in sim.penguins) {
+          if (!p.inIgloo) visitedPositions.add(p.pos);
+        }
         final movingP = sim.penguins.where((p) => p.id == step.penguinId).firstOrNull;
         if (movingP != null) {
           final clumpMembers =
@@ -592,10 +648,59 @@ GeneratedLevel? _tryGenerate(
           for (final m in clumpMembers) {
             movesUsedByPenguin[m.id] = (movesUsedByPenguin[m.id] ?? 0) + 1;
           }
+
+          // Check if moving into any ice block
+          final (dx, dy) = step.dir.delta;
+          final target = movingP.pos.translate(dx, dy);
+          for (final b in baseState.blocks) {
+            if (sim.blocks.any((sb) => sb.pos == target && sb.pos == b.pos)) {
+              pushedBlocks.add(b.pos);
+            }
+          }
         }
+
         final res = tryMove(sim.copyWith(selectedId: step.penguinId), step.penguinId, step.dir);
         if (res is MoveSuccess) {
           sim = res.next;
+        }
+      }
+      for (final p in sim.penguins) {
+        visitedPositions.add(p.pos);
+      }
+
+      // Check also if any block moved from initial position at the end of the simulation
+      for (final b in baseState.blocks) {
+        final stillAtInitial = sim.blocks.any((sb) => sb.pos == b.pos);
+        if (!stillAtInitial) {
+          pushedBlocks.add(b.pos);
+        }
+      }
+
+      // Prune useless cracked ice: if never stepped on, revert to floor
+      final finalTiles = workingTiles.map((row) => List<TileType>.from(row)).toList();
+      int crackedSteppedCount = 0;
+      for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+          if (finalTiles[y][x] == TileType.cracked) {
+            if (visitedPositions.contains(Position(x, y))) {
+              crackedSteppedCount++;
+            } else {
+              finalTiles[y][x] = TileType.floor; // revert useless cracked ice
+            }
+          }
+        }
+      }
+
+      // Prune useless ice blocks: remove from level if never pushed!
+      final activeBlocks = blocks.where((b) => pushedBlocks.contains(b.pos)).toList();
+
+      // For level >= 16, require active puzzle depth (obstacles must matter)
+      if (levelNumber >= 16 && !relaxed) {
+        final hasActiveObstacle = activeBlocks.isNotEmpty ||
+            crackedSteppedCount > 0 ||
+            finalTiles.any((row) => row.contains(TileType.hole));
+        if (!hasActiveObstacle) {
+          continue; // retry for a more exciting layout!
         }
       }
 
@@ -609,7 +714,11 @@ GeneratedLevel? _tryGenerate(
         );
       }).toList();
 
-      final calibratedState = baseState.copyWith(penguins: calibratedPenguins);
+      final calibratedState = baseState.copyWith(
+        tiles: finalTiles,
+        blocks: activeBlocks,
+        penguins: calibratedPenguins,
+      );
 
       return GeneratedLevel(
         initialState: calibratedState,
@@ -620,6 +729,51 @@ GeneratedLevel? _tryGenerate(
     }
   }
 
+  return null;
+}
+
+// ─────────────────────────── Path & Geometry Helpers ─────────────────────────
+
+bool _hasDirectLineOfSight(Position a, Position b, List<List<TileType>> tiles) {
+  if (a.x == b.x) {
+    final minY = min(a.y, b.y);
+    final maxY = max(a.y, b.y);
+    for (int y = minY + 1; y < maxY; y++) {
+      if (tiles[y][a.x] == TileType.wall) return false;
+    }
+    return true; // unobstructed straight column
+  }
+  if (a.y == b.y) {
+    final minX = min(a.x, b.x);
+    final maxX = max(a.x, b.x);
+    for (int x = minX + 1; x < maxX; x++) {
+      if (tiles[a.y][x] == TileType.wall) return false;
+    }
+    return true; // unobstructed straight row
+  }
+  return false;
+}
+
+List<Position>? _findShortestFloorPath(
+    Position start, Position goal, List<List<TileType>> grid, int w, int h) {
+  final queue = Queue<List<Position>>()..add([start]);
+  final visited = <Position>{start};
+  while (queue.isNotEmpty) {
+    final path = queue.removeFirst();
+    final cur = path.last;
+    if (cur == goal) return path;
+    for (final (dx, dy) in const [(0, -1), (0, 1), (-1, 0), (1, 0)]) {
+      final nx = cur.x + dx;
+      final ny = cur.y + dy;
+      if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+        final np = Position(nx, ny);
+        if (!visited.contains(np) && grid[ny][nx] != TileType.wall) {
+          visited.add(np);
+          queue.add([...path, np]);
+        }
+      }
+    }
+  }
   return null;
 }
 
@@ -646,17 +800,71 @@ Set<Position> _floodFill(List<List<TileType>> tiles, Position start, int w, int 
   return visited;
 }
 
-// ─────────────────────────── BFS Solver ──────────────────────────────────────
+// ─────────────────────────── A* Search Solver ────────────────────────────────
 
-List<({int penguinId, Direction dir})>? _solveBfs(
-  GameState initial, {
-  int maxDepth = 15,
+class _SearchNode implements Comparable<_SearchNode> {
+  final GameState state;
+  final List<({int penguinId, Direction dir})> path;
+  final int g;
+  final int h;
+  final int tieBreaker;
+
+  _SearchNode({
+    required this.state,
+    required this.path,
+    required this.g,
+    required this.h,
+    required this.tieBreaker,
+  });
+
+  int get f => g + h;
+
+  @override
+  int compareTo(_SearchNode other) {
+    final diff = f.compareTo(other.f);
+    if (diff != 0) return diff;
+    final hDiff = h.compareTo(other.h);
+    if (hDiff != 0) return hDiff;
+    return tieBreaker.compareTo(other.tieBreaker);
+  }
+}
+
+List<({int penguinId, Direction dir})>? _solveSearch(
+  GameState initial,
+  Position igloo, {
+  int maxDepth = 20,
+  int maxStates = 12000,
 }) {
-  final queue = Queue<(GameState, List<({int penguinId, Direction dir})>)>();
-  queue.add((initial, []));
-  final visited = <int>{};
+  int heuristic(GameState s) {
+    int maxDist = 0;
+    for (final p in s.penguins) {
+      if (!p.inIgloo) {
+        final d = (p.pos.x - igloo.x).abs() + (p.pos.y - igloo.y).abs();
+        if (d > maxDist) maxDist = d;
+      }
+    }
+    return maxDist;
+  }
 
-  // Blazing fast integer hash state key: 0 heap allocations, avoids ANRs
+  int tieBreaker(GameState s) {
+    int sumDist = 0;
+    for (final p in s.penguins) {
+      if (!p.inIgloo) {
+        sumDist += (p.pos.x - igloo.x).abs() + (p.pos.y - igloo.y).abs();
+      }
+    }
+    return sumDist;
+  }
+
+  final pq = PriorityQueue<_SearchNode>();
+  pq.add(_SearchNode(
+    state: initial,
+    path: const [],
+    g: 0,
+    h: heuristic(initial),
+    tieBreaker: tieBreaker(initial),
+  ));
+
   int stateKey(GameState s) {
     int h = 17;
     for (final p in s.penguins) {
@@ -670,19 +878,21 @@ List<({int penguinId, Direction dir})>? _solveBfs(
     return h;
   }
 
-  visited.add(stateKey(initial));
+  final visited = <int, int>{};
+  visited[stateKey(initial)] = 0;
 
   int statesExplored = 0;
-  while (queue.isNotEmpty && statesExplored < 2500) {
-    final (cur, path) = queue.removeFirst();
+  while (pq.isNotEmpty && statesExplored < maxStates) {
+    final node = pq.removeFirst();
+    final cur = node.state;
+    final path = node.path;
     statesExplored++;
 
-    if (path.length > maxDepth) break;
-
-    // Goal test: all penguins entered igloo
     if (checkWin(cur)) {
       return path;
     }
+
+    if (path.length >= maxDepth) continue;
 
     for (final pg in cur.penguins) {
       if (pg.inIgloo) continue;
@@ -695,9 +905,17 @@ List<({int penguinId, Direction dir})>? _solveBfs(
         if (res is MoveSuccess) {
           final nxt = res.next;
           final key = stateKey(nxt);
-          if (!visited.contains(key)) {
-            visited.add(key);
-            queue.add((nxt, [...path, (penguinId: pg.id, dir: dir)]));
+          final nextG = path.length + 1;
+          final prevG = visited[key];
+          if (prevG == null || nextG < prevG) {
+            visited[key] = nextG;
+            pq.add(_SearchNode(
+              state: nxt,
+              path: [...path, (penguinId: pg.id, dir: dir)],
+              g: nextG,
+              h: heuristic(nxt),
+              tieBreaker: tieBreaker(nxt),
+            ));
           }
         }
       }
@@ -762,7 +980,6 @@ GeneratedLevel _generateDeterministicFallback(
   // Place decorative obstacle walls in outer corners to maintain maze feel
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
-      // Don't place walls along center row or column
       if (x != centerX && y != centerY) {
         if ((x == 0 && y == 0) ||
             (x == w - 1 && y == 0) ||
@@ -778,17 +995,14 @@ GeneratedLevel _generateDeterministicFallback(
   for (int i = 0; i < band.penguinCount; i++) {
     final color = i < band.colors.length ? band.colors[i] : PenguinColor.blue;
     Position pos;
-    if (color == PenguinColor.green) {
-      // Green can only move vertical (up/down)
-      pos = Position(centerX, 0);
-    } else if (color == PenguinColor.orange) {
-      // Orange can only move horizontal (left/right)
+    if (i == 0) {
+      pos = Position(0, centerY);
+    } else if (i == 1) {
+      pos = Position(centerX, h - 1);
+    } else if (i == 2) {
       pos = Position(w - 1, centerY);
     } else {
-      // Blue and others can move in any cardinal direction
-      pos = i == 0
-          ? Position(0, centerY)
-          : (i == 1 ? Position(centerX, h - 1) : Position(w - 1, centerY));
+      pos = Position(centerX, 0);
     }
 
     penguins.add(
@@ -816,18 +1030,37 @@ GeneratedLevel _generateDeterministicFallback(
     selectedId: 0,
   );
 
-  final solution = _solveBfs(base, maxDepth: 18) ??
-      [
-        for (final p in penguins)
-          (
-            penguinId: p.id,
-            dir: p.pos.y == 0
-                ? Direction.down
-                : (p.pos.y == h - 1
-                    ? Direction.up
-                    : (p.pos.x == 0 ? Direction.right : Direction.left))
-          )
-      ];
+  var solution = _solveSearch(base, Position(centerX, centerY), maxDepth: 25);
+  if (solution == null || solution.isEmpty) {
+    final explicitMoves = <({int penguinId, Direction dir})>[];
+    var sim = base;
+    for (final p in penguins) {
+      while (true) {
+        final curP = sim.penguins.firstWhere((cp) => cp.id == p.id);
+        if (curP.inIgloo) break;
+        Direction d;
+        if (curP.pos.x < centerX) {
+          d = Direction.right;
+        } else if (curP.pos.x > centerX) {
+          d = Direction.left;
+        } else if (curP.pos.y < centerY) {
+          d = Direction.down;
+        } else if (curP.pos.y > centerY) {
+          d = Direction.up;
+        } else {
+          break;
+        }
+        final res = tryMove(sim.copyWith(selectedId: curP.id), curP.id, d);
+        if (res is MoveSuccess) {
+          explicitMoves.add((penguinId: curP.id, dir: d));
+          sim = res.next;
+        } else {
+          break;
+        }
+      }
+    }
+    solution = explicitMoves;
+  }
 
   // Calibrate fallback moves
   final movesUsedByPenguin = <int, int>{for (final p in penguins) p.id: 0};

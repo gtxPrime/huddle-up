@@ -38,24 +38,28 @@ PenguinInfo getPenguinInfo(PenguinColor color) {
     case PenguinColor.green:
       return const PenguinInfo(
         title: 'Green Penguin',
-        role: 'Vertical Specialist',
-        description: 'Can ONLY move UP and DOWN! Strictly locked to vertical lanes.',
+        role: 'Agile Trekker',
+        description: 'Moves freely in all 4 cardinal directions one step at a time.',
         directionIcons: [
           Icons.arrow_upward_rounded,
           Icons.arrow_downward_rounded,
+          Icons.arrow_back_rounded,
+          Icons.arrow_forward_rounded,
         ],
-        limitText: 'CANNOT move Left or Right on its own! Must huddle with teammates to move sideways.',
+        limitText: 'Full 4-way pathfinding navigation. Excellent for tackling complex corridors.',
       );
     case PenguinColor.orange:
       return const PenguinInfo(
         title: 'Orange Penguin',
-        role: 'Horizontal Specialist',
-        description: 'Can ONLY move LEFT and RIGHT! Strictly locked to horizontal rows.',
+        role: 'Brave Explorer',
+        description: 'Moves freely in all 4 cardinal directions one step at a time.',
         directionIcons: [
+          Icons.arrow_upward_rounded,
+          Icons.arrow_downward_rounded,
           Icons.arrow_back_rounded,
           Icons.arrow_forward_rounded,
         ],
-        limitText: 'CANNOT move Up or Down on its own! Must huddle with teammates to travel vertically.',
+        limitText: 'Full 4-way movement freedom. Great for pushing blocks and opening paths.',
       );
     case PenguinColor.red:
       return const PenguinInfo(
