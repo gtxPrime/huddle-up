@@ -560,7 +560,7 @@ GeneratedLevel _generateDeterministicFallback(
       Penguin(
         id: 2,
         color: band.colors.length > 2 ? band.colors[2] : PenguinColor.orange,
-        pos: Position(0, 0),
+        pos: const Position(0, 0),
         clumpId: 2,
         maxMoves: 99,
         movesLeft: 99,

@@ -249,7 +249,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                           AudioService.playTap();
                           ref.read(gameProvider.notifier).rewind();
                         },
-                        rewindsLeft: gs.rewindsLeft,
+                        canUndo: vm.history.isNotEmpty,
                       ),
                     ],
                   ),

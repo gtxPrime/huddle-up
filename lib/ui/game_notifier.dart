@@ -114,14 +114,8 @@ class GameNotifier extends StateNotifier<GameViewModel?> {
       final nextInIgloo = next.penguins.where((p) => p.inIgloo).length;
       if (nextInIgloo > prevInIgloo) {
         comboToast = 'SAFE IN IGLOO! 🏕️';
-      } else {
-        final prevClumpCount = gs.penguins.where((p) => !p.inIgloo).map((p) => p.clumpId).toSet().length;
-        final nextClumpCount = next.penguins.where((p) => !p.inIgloo).map((p) => p.clumpId).toSet().length;
-        if (nextClumpCount < prevClumpCount) {
-          comboToast = 'HUDDLE MERGE!';
-        } else if (next.fish.length < gs.fish.length) {
-          comboToast = 'FISH SNACK! +50 FISH';
-        }
+      } else if (next.fish.length < gs.fish.length) {
+        comboToast = 'FISH SNACK! +50 FISH';
       }
 
       state = vm.copyWith(
@@ -144,7 +138,7 @@ class GameNotifier extends StateNotifier<GameViewModel?> {
         // Check if all remaining penguins ran out of moves (shortest route constraint)
         final remaining = next.penguins.where((p) => !p.inIgloo);
         if (remaining.isNotEmpty && remaining.every((p) => p.movesLeft <= 0)) {
-          if (history.isNotEmpty && next.rewindsLeft > 0) {
+          if (history.isNotEmpty) {
             // Player still has undos available! Don't immediately kill them; prompt to undo
             state = state!.copyWith(
               dopamineComboToast: 'OUT OF MOVES! TAP UNDO ↺',
@@ -228,12 +222,10 @@ class GameNotifier extends StateNotifier<GameViewModel?> {
     final vm = state;
     if (vm == null) return;
     if (vm.history.isEmpty) return;
-    if (vm.state.rewindsLeft <= 0) return;
 
     final prev = vm.history.last;
     final history = vm.history.sublist(0, vm.history.length - 1);
     final rewound = prev.copyWith(
-      rewindsLeft: vm.state.rewindsLeft - 1,
       selectedId: vm.state.selectedId,
     );
     // If lives were 0 due to a failure state, restore 1 life and resume playing!

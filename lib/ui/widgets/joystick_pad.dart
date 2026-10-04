@@ -9,14 +9,14 @@ class JoystickPad extends StatelessWidget {
   final GameState? gameState;
   final ValueChanged<Direction> onDirection;
   final VoidCallback? onUndo;
-  final int rewindsLeft;
+  final bool canUndo;
 
   const JoystickPad({
     super.key,
     required this.gameState,
     required this.onDirection,
     this.onUndo,
-    this.rewindsLeft = 3,
+    this.canUndo = false,
   });
 
   @override
@@ -28,20 +28,17 @@ class JoystickPad extends StatelessWidget {
     if (gs != null && gs.selectedId >= 0) {
       final sel = gs.selectedPenguin;
       if (sel != null && !sel.inIgloo) {
-        final group = gs.penguins
-            .where((p) => !p.inIgloo && p.clumpId == sel.clumpId)
-            .toList();
-        allowed = allowedDirections(group);
-        // Filter currently blocked directions
+        allowed = allowedDirections([sel]);
+        // Filter currently blocked directions (solid tiles or other penguins)
         for (final d in allowed) {
           final (dx, dy) = d.delta;
           final np = sel.pos.translate(dx, dy);
-          if (!gs.isSolid(np)) legal.add(d);
+          if (!gs.isSolid(np) && gs.penguinAt(np) == null) {
+            legal.add(d);
+          }
         }
       }
     }
-
-    final canUndo = onUndo != null && rewindsLeft > 0;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
@@ -66,7 +63,6 @@ class JoystickPad extends StatelessWidget {
               ),
               _DpadUndoButton(
                 canUndo: canUndo,
-                rewindsLeft: rewindsLeft,
                 onTap: onUndo,
               ),
               _DpadButton(
@@ -91,12 +87,10 @@ class JoystickPad extends StatelessWidget {
 
 class _DpadUndoButton extends StatelessWidget {
   final bool canUndo;
-  final int rewindsLeft;
   final VoidCallback? onTap;
 
   const _DpadUndoButton({
     required this.canUndo,
-    required this.rewindsLeft,
     required this.onTap,
   });
 

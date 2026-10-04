@@ -40,16 +40,11 @@ MoveResult tryMove(GameState state, int penguinId, Direction dir) {
   final selected = state.penguins.firstWhere((p) => p.id == penguinId,
       orElse: () => throw StateError('No penguin $penguinId'));
 
-  // Gather clump members
-  final group = state.penguins
-      .where((p) => p.clumpId == selected.clumpId)
-      .toList();
+  // Individual movement (each penguin moves on its own)
+  final group = [selected];
 
   // Check if moving penguin has remaining moves
   if (selected.movesLeft <= 0) return MoveFail(FailReason.noLegalMove);
-  for (final p in group) {
-    if (p.movesLeft <= 0) return MoveFail(FailReason.noLegalMove);
-  }
 
   // Check allowed directions
   final allowed = allowedDirections(group);
@@ -79,18 +74,10 @@ MoveResult _doWalk(
     final np = pg.pos.translate(dx * steps, dy * steps);
     // Wall / out of bounds
     if (state.isSolid(np)) return MoveFail(FailReason.wallBlocked);
-    // Blocked by a non-group penguin?
+    // Blocked by another penguin
     final occupant = state.penguinAt(np);
-    if (occupant != null && !group.any((g) => g.id == occupant.id)) {
-      // Try to push that penguin (only 1 non-group penguin ahead)
-      if (group.length > 1) return MoveFail(FailReason.wallBlocked);
-      // Solo: push the occupant
-      final pushResult = _pushPenguin(state, occupant, dir);
-      if (pushResult == null) return MoveFail(FailReason.wallBlocked);
-      // Rebuild with pushed occupant
-      final pushed = pushResult;
-      return _applyWalk(state, group, newPositions..clear()
-        ..[pg.id] = np, additionalPenguinUpdate: pushed);
+    if (occupant != null && occupant.id != pg.id) {
+      return MoveFail(FailReason.wallBlocked);
     }
     // Ice block in the way?
     final block = state.blockAt(np);
@@ -263,15 +250,6 @@ MoveResult _applyWalk(GameState state, List<Penguin> group,
   return _applyTileEffects(state.copyWith(penguins: penguins));
 }
 
-/// Returns an updated penguin if it can be pushed, else null.
-Penguin? _pushPenguin(GameState state, Penguin penguin, Direction dir) {
-  final (dx, dy) = dir.delta;
-  final np = penguin.pos.translate(dx, dy);
-  if (state.isSolid(np)) return null;
-  if (state.penguinAt(np) != null) return null;
-  if (state.blockAt(np) != null) return null;
-  return penguin.copyWith(pos: np);
-}
 
 List<Penguin> _applyPositions(
     List<Penguin> penguins, Map<int, Position> updates) {
