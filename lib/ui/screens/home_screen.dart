@@ -257,9 +257,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   borderRadius: BorderRadius.circular(18),
                   child: Container(
-                    width: 270,
+                    width: 290,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                        horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFFFF8F00), Color(0xFFFFB300)],

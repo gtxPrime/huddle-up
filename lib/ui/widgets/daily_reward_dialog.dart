@@ -83,14 +83,17 @@ class _DailyRewardDialogState extends State<DailyRewardDialog> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.event_available_rounded,
-                    color: Color(0xFF00E5FF), size: 24),
-                const SizedBox(width: 10),
-                Text(
-                  '7-Day Antarctic Rewards',
-                  style: GoogleFonts.outfit(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
+                    color: Color(0xFF00E5FF), size: 22),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    '7-Day Antarctic Rewards',
+                    style: GoogleFonts.outfit(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

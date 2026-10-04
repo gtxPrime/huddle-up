@@ -395,26 +395,34 @@ class KawaiiPenguin extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            dirIcon,
-            color: isOutOfMoves ? Colors.white70 : displayColor,
-            size: (bSize * 0.40).clamp(7.0, 11.0),
-          ),
-          Text(
-            '$movesLeft',
-            style: GoogleFonts.outfit(
-              color: isOutOfMoves ? Colors.white : const Color(0xFF0F172A),
-              fontSize: (bSize * 0.58).clamp(9.0, 15.0),
-              fontWeight: FontWeight.w900,
-              height: 0.95,
+      child: Center(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Padding(
+            padding: const EdgeInsets.all(1.5),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  dirIcon,
+                  color: isOutOfMoves ? Colors.white70 : displayColor,
+                  size: (bSize * 0.40).clamp(7.0, 11.0),
+                ),
+                Text(
+                  '$movesLeft',
+                  style: GoogleFonts.outfit(
+                    color: isOutOfMoves ? Colors.white : const Color(0xFF0F172A),
+                    fontSize: (bSize * 0.58).clamp(9.0, 15.0),
+                    fontWeight: FontWeight.w900,
+                    height: 1.0,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
