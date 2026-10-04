@@ -106,14 +106,14 @@ Future<void> showPenguinInfoDialog(BuildContext context, PenguinColor color) {
             color: const Color(0xFF0D1B2A),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: def.displayColor.withValues(alpha: 0.8),
-              width: 2.0,
+              color: Colors.white.withValues(alpha: 0.18),
+              width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: def.displayColor.withValues(alpha: 0.35),
+                color: Colors.black.withValues(alpha: 0.55),
                 blurRadius: 28,
-                spreadRadius: 2,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
@@ -274,14 +274,14 @@ Future<void> showPenguinIntroDialog(
             color: const Color(0xFF0D1B2A),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
-              color: const Color(0xFF00E5FF),
-              width: 2.2,
+              color: Colors.white.withValues(alpha: 0.18),
+              width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
-                blurRadius: 36,
-                spreadRadius: 4,
+                color: Colors.black.withValues(alpha: 0.55),
+                blurRadius: 28,
+                offset: const Offset(0, 10),
               ),
             ],
           ),

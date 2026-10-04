@@ -160,8 +160,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       letterSpacing: 4,
                       shadows: [
                         Shadow(
-                          color: const Color(0xFF00E5FF).withValues(alpha: 0.6),
-                          blurRadius: 20,
+                          color: Colors.black.withValues(alpha: 0.55),
+                          offset: const Offset(0, 3),
+                          blurRadius: 10,
                         ),
                       ],
                     ),
@@ -260,8 +261,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                 )
-                    .animate(delay: 750.ms, onPlay: (c) => c.repeat(reverse: true))
-                    .scaleXY(begin: 1.0, end: 1.03, duration: 800.ms),
+                    .animate(delay: 750.ms)
+                    .fadeIn()
+                    .slideY(begin: 0.2, end: 0),
 
                 const Spacer(),
 
@@ -395,9 +397,14 @@ class _PenguinHeroIllustration extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
-            blurRadius: 36,
-            spreadRadius: 4,
+            color: Colors.black.withValues(alpha: 0.45),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: const Color(0xFF0288D1).withValues(alpha: 0.2),
+            blurRadius: 14,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -487,16 +494,19 @@ class _HomeButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 250,
+        constraints: const BoxConstraints(
+          maxWidth: 290,
+          minWidth: 240,
+        ),
         height: 56,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           color: baseColor,
           boxShadow: [
             BoxShadow(
-              color: accent.withValues(alpha: 0.4),
-              blurRadius: 18,
-              offset: const Offset(0, 6),
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -517,21 +527,29 @@ class _HomeButton extends StatelessWidget {
               width: 1,
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: Colors.white, size: 20),
-              const SizedBox(width: 10),
-              Text(
-                label,
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: 1.2,
-                ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: Colors.white, size: 20),
+                  const SizedBox(width: 10),
+                  Text(
+                    label,
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

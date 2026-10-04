@@ -371,13 +371,7 @@ class _PenguinWidget extends StatelessWidget {
       ),
     );
 
-    if (isSelected) {
-      body = body
-          .animate(onPlay: (c) => c.repeat(reverse: true))
-          .scaleXY(begin: 1.0, end: 1.08, duration: 450.ms, curve: Curves.easeInOut);
-    }
-
-    // Spring glide animation across tiles
+    // Keep board penguins static and clean
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOutBack,

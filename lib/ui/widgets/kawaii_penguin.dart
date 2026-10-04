@@ -104,17 +104,19 @@ class KawaiiPenguin extends StatelessWidget {
                   ],
                   stops: const [0.0, 0.6, 1.0],
                 ),
-                border: isSelected
-                    ? null
-                    : Border.all(
-                        color: Colors.white.withValues(alpha: 0.35),
-                        width: 1.0,
-                      ),
+                border: Border.all(
+                  color: isSelected
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.25),
+                  width: isSelected ? 2.0 : 1.0,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: def.displayColor.withValues(alpha: isSelected ? 0.85 : 0.35),
-                    blurRadius: isSelected ? size * 0.36 : size * 0.12,
-                    spreadRadius: isSelected ? size * 0.06 : 0,
+                    color: isSelected
+                        ? Colors.black.withValues(alpha: 0.35)
+                        : Colors.black.withValues(alpha: 0.18),
+                    blurRadius: isSelected ? 6 : 3,
+                    offset: const Offset(0, 1),
                   ),
                 ],
               ),
@@ -399,8 +401,8 @@ class KawaiiPenguin extends StatelessWidget {
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Padding(
-            padding: const EdgeInsets.all(1.5),
-            child: Column(
+            padding: const EdgeInsets.symmetric(horizontal: 1.5, vertical: 1.0),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
@@ -408,13 +410,14 @@ class KawaiiPenguin extends StatelessWidget {
                 Icon(
                   dirIcon,
                   color: isOutOfMoves ? Colors.white70 : displayColor,
-                  size: (bSize * 0.40).clamp(7.0, 11.0),
+                  size: (bSize * 0.44).clamp(7.0, 11.0),
                 ),
+                const SizedBox(width: 1),
                 Text(
                   '$movesLeft',
                   style: GoogleFonts.outfit(
                     color: isOutOfMoves ? Colors.white : const Color(0xFF0F172A),
-                    fontSize: (bSize * 0.58).clamp(9.0, 15.0),
+                    fontSize: (bSize * 0.58).clamp(9.0, 14.0),
                     fontWeight: FontWeight.w900,
                     height: 1.0,
                   ),

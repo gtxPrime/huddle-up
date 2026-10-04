@@ -68,8 +68,8 @@ class AdService {
     if (GameStorage.isAdsRemoved()) return;
 
     _levelsSinceLastInterstitial++;
-    // Highest impression & retention balance: show interstitial every 2 levels
-    if (_levelsSinceLastInterstitial >= 2) {
+    // Show interstitial ad after every 3 completed levels
+    if (_levelsSinceLastInterstitial >= 3) {
       _levelsSinceLastInterstitial = 0;
       showInterstitial(context);
     }
@@ -102,6 +102,92 @@ class AdService {
     );
   }
 
+  // ── Rewarded Ad Loading Dialog ─────────────────────────────────────────────
+
+  static bool _isLoadingAd = false;
+  static BuildContext? _loadingContext;
+
+  static void _showAdLoadingDialog(BuildContext context) {
+    if (_isLoadingAd) return;
+    _isLoadingAd = true;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (ctx) {
+        _loadingContext = ctx;
+        return PopScope(
+          canPop: false,
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F1E2E).withValues(alpha: 0.96),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      blurRadius: 28,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(
+                      width: 36,
+                      height: 36,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4DD0E1)),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      'Loading Ad...',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Preparing your arctic reward',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  static void _dismissAdLoadingDialog() {
+    if (_isLoadingAd) {
+      _isLoadingAd = false;
+      if (_loadingContext != null && _loadingContext!.mounted) {
+        Navigator.of(_loadingContext!, rootNavigator: true).pop();
+        _loadingContext = null;
+      }
+    }
+  }
+
   // ── Rewarded Ad: Extra Life ────────────────────────────────────────────────
 
   static void showRewardedLifeAd(
@@ -121,16 +207,24 @@ class AdService {
       return;
     }
 
+    _showAdLoadingDialog(context);
+
     RewardedAd.load(
       adUnitId: rewardedAdUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
+          _dismissAdLoadingDialog();
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) => ad.dispose(),
+            onAdFailedToShowFullScreenContent: (ad, err) => ad.dispose(),
+          );
           ad.show(onUserEarnedReward: (adWithoutView, reward) {
             onRewardEarned();
           });
         },
         onAdFailedToLoad: (err) {
+          _dismissAdLoadingDialog();
           _showSimulatedRewardDialog(
             context,
             title: 'Revive Penguins',
@@ -163,16 +257,24 @@ class AdService {
       return;
     }
 
+    _showAdLoadingDialog(context);
+
     RewardedAd.load(
       adUnitId: rewardedAdUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
+          _dismissAdLoadingDialog();
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) => ad.dispose(),
+            onAdFailedToShowFullScreenContent: (ad, err) => ad.dispose(),
+          );
           ad.show(onUserEarnedReward: (adWithoutView, reward) {
             onRewardEarned();
           });
         },
         onAdFailedToLoad: (err) {
+          _dismissAdLoadingDialog();
           _showSimulatedRewardDialog(
             context,
             title: 'Need More Time?',
@@ -204,16 +306,24 @@ class AdService {
       return;
     }
 
+    _showAdLoadingDialog(context);
+
     RewardedAd.load(
       adUnitId: rewardedAdUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
+          _dismissAdLoadingDialog();
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) => ad.dispose(),
+            onAdFailedToShowFullScreenContent: (ad, err) => ad.dispose(),
+          );
           ad.show(onUserEarnedReward: (adWithoutView, reward) {
             onRewardEarned();
           });
         },
         onAdFailedToLoad: (err) {
+          _dismissAdLoadingDialog();
           _showSimulatedRewardDialog(
             context,
             title: '2X Level Bonus',
@@ -246,16 +356,24 @@ class AdService {
       return;
     }
 
+    _showAdLoadingDialog(context);
+
     RewardedAd.load(
       adUnitId: rewardedAdUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
+          _dismissAdLoadingDialog();
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) => ad.dispose(),
+            onAdFailedToShowFullScreenContent: (ad, err) => ad.dispose(),
+          );
           ad.show(onUserEarnedReward: (adWithoutView, reward) {
             onRewardEarned();
           });
         },
         onAdFailedToLoad: (err) {
+          _dismissAdLoadingDialog();
           _showSimulatedRewardDialog(
             context,
             title: 'Emergency Rescue',
@@ -287,16 +405,24 @@ class AdService {
       return;
     }
 
+    _showAdLoadingDialog(context);
+
     RewardedAd.load(
       adUnitId: rewardedAdUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
+          _dismissAdLoadingDialog();
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) => ad.dispose(),
+            onAdFailedToShowFullScreenContent: (ad, err) => ad.dispose(),
+          );
           ad.show(onUserEarnedReward: (adWithoutView, reward) {
             onRewardEarned();
           });
         },
         onAdFailedToLoad: (err) {
+          _dismissAdLoadingDialog();
           _showSimulatedRewardDialog(
             context,
             title: 'Antarctic Mystery Chest',

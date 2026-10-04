@@ -43,13 +43,13 @@ class GeneratedLevel {
 
 GeneratedLevel generateLevel(int levelNumber, {int dailyOffset = 0}) {
   final band = _bandFor(levelNumber);
-  for (int attempt = 0; attempt < 80; attempt++) {
+  for (int attempt = 0; attempt < 15; attempt++) {
     final seed = levelNumber * 97 + dailyOffset * 1000003 + attempt * 23;
     final result = _tryGenerate(Random(seed), band, seed, levelNumber);
     if (result != null) return result;
   }
 
-  // Fallback with minimal constraints to guarantee instant return
+  // Fast fallback with relaxed constraints to guarantee instant return
   final seed = levelNumber * 97 + dailyOffset * 1000003;
   return _tryGenerate(Random(seed), band, seed, levelNumber, relaxed: true) ??
       _generateDeterministicFallback(levelNumber, band, seed);
@@ -84,7 +84,7 @@ class _Band {
 }
 
 _Band _bandFor(int level) {
-  // Increased difficulty: increased solution depth by 40-50%
+  // Enhanced difficulty: higher minimum solution depth
   if (level <= 5) {
     return const _Band(
       width: 6,
@@ -92,8 +92,8 @@ _Band _bandFor(int level) {
       penguinCount: 2,
       colors: [PenguinColor.blue, PenguinColor.blue],
       blockBudget: 0,
-      minSolution: 6,
-      maxSolution: 11,
+      minSolution: 8,
+      maxSolution: 13,
     );
   }
   if (level <= 15) {
@@ -103,8 +103,8 @@ _Band _bandFor(int level) {
       penguinCount: 2,
       colors: [PenguinColor.blue, PenguinColor.green],
       blockBudget: 0,
-      minSolution: 8,
-      maxSolution: 13,
+      minSolution: 9,
+      maxSolution: 15,
     );
   }
   if (level <= 30) {
@@ -114,8 +114,8 @@ _Band _bandFor(int level) {
       penguinCount: 2,
       colors: [PenguinColor.blue, PenguinColor.orange],
       blockBudget: 0,
-      minSolution: 9,
-      maxSolution: 14,
+      minSolution: 10,
+      maxSolution: 16,
     );
   }
   if (level <= 50) {
@@ -126,8 +126,8 @@ _Band _bandFor(int level) {
       colors: [PenguinColor.blue, PenguinColor.red],
       blockBudget: 0,
       waterBudget: 1,
-      minSolution: 10,
-      maxSolution: 16,
+      minSolution: 12,
+      maxSolution: 18,
     );
   }
   // 3 penguins from level 51 to 100
@@ -140,7 +140,39 @@ _Band _bandFor(int level) {
       blockBudget: 0,
       waterBudget: 1,
       minSolution: 8,
-      maxSolution: 15,
+      maxSolution: 16,
+    );
+  }
+  if (level <= 100) {
+    return const _Band(
+      width: 8,
+      height: 7,
+      penguinCount: 3,
+      colors: [PenguinColor.blue, PenguinColor.red, PenguinColor.yellow],
+      blockBudget: 0,
+      waterBudget: 1,
+      crackedBudget: 1,
+      minSolution: 9,
+      maxSolution: 18,
+    );
+  }
+  // 4 penguins from level 101 to 150
+  if (level <= 150) {
+    return const _Band(
+      width: 8,
+      height: 8,
+      penguinCount: 4,
+      colors: [
+        PenguinColor.blue,
+        PenguinColor.green,
+        PenguinColor.orange,
+        PenguinColor.purple,
+      ],
+      blockBudget: 1,
+      waterBudget: 1,
+      crackedBudget: 1,
+      minSolution: 10,
+      maxSolution: 20,
     );
   }
   if (level <= 100) {
@@ -321,7 +353,7 @@ GeneratedLevel? _tryGenerate(
   // Try candidate placements
   final colors = _pickColors(rng, band.colors, band.penguinCount);
 
-  for (int attemptPair = 0; attemptPair < 18; attemptPair++) {
+  for (int attemptPair = 0; attemptPair < 5; attemptPair++) {
     final candidatePositions = _pickSpreadPositions(
       rng,
       validFloors,
@@ -438,18 +470,26 @@ List<({int penguinId, Direction dir})>? _solveBfs(
 }) {
   final queue = Queue<(GameState, List<({int penguinId, Direction dir})>)>();
   queue.add((initial, []));
-  final visited = <String>{};
+  final visited = <int>{};
 
-  String stateKey(GameState s) {
-    final positions = s.penguins.map((p) => '${p.id}:${p.inIgloo ? 'IN' : '${p.pos.x},${p.pos.y}'}');
-    final blocks = s.blocks.map((b) => '${b.pos.x},${b.pos.y}');
-    return '${positions.join(';')}|${blocks.join(';')}';
+  // Blazing fast integer hash state key: 0 heap allocations, avoids ANRs
+  int stateKey(GameState s) {
+    int h = 17;
+    for (final p in s.penguins) {
+      final code = p.inIgloo ? 255 : (p.pos.x | (p.pos.y << 4));
+      h = (h * 31 + code) & 0x7FFFFFFF;
+    }
+    for (final b in s.blocks) {
+      final code = b.pos.x | (b.pos.y << 4);
+      h = (h * 31 + code) & 0x7FFFFFFF;
+    }
+    return h;
   }
 
   visited.add(stateKey(initial));
 
   int statesExplored = 0;
-  while (queue.isNotEmpty && statesExplored < 8000) {
+  while (queue.isNotEmpty && statesExplored < 2500) {
     final (cur, path) = queue.removeFirst();
     statesExplored++;
 
@@ -530,42 +570,54 @@ GeneratedLevel _generateDeterministicFallback(
   final h = band.height;
   final tiles = List.generate(h, (_) => List.filled(w, TileType.floor));
 
-  // Single internal divider wall with center door
-  final divX = w ~/ 2;
-  for (int y = 0; y < h; y++) {
-    tiles[y][divX] = TileType.wall;
-  }
-  final doorY = h ~/ 2;
-  tiles[doorY][divX] = TileType.igloo;
-  final meetingTiles = [Position(divX, doorY)];
+  final centerX = w ~/ 2;
+  final centerY = h ~/ 2;
+  tiles[centerY][centerX] = TileType.igloo;
+  final meetingTiles = [Position(centerX, centerY)];
 
-  final penguins = [
-    Penguin(
-      id: 0,
-      color: band.colors.isNotEmpty ? band.colors[0] : PenguinColor.blue,
-      pos: Position(0, doorY),
-      clumpId: 0,
-      maxMoves: 99,
-      movesLeft: 99,
-    ),
-    Penguin(
-      id: 1,
-      color: band.colors.length > 1 ? band.colors[1] : PenguinColor.blue,
-      pos: Position(w - 1, doorY),
-      clumpId: 1,
-      maxMoves: 99,
-      movesLeft: 99,
-    ),
-    if (band.penguinCount >= 3)
+  // Place decorative obstacle walls in outer corners to maintain maze feel
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      // Don't place walls along center row or column
+      if (x != centerX && y != centerY) {
+        if ((x == 0 && y == 0) ||
+            (x == w - 1 && y == 0) ||
+            (x == 0 && y == h - 1) ||
+            (x == w - 1 && y == h - 1)) {
+          tiles[y][x] = TileType.wall;
+        }
+      }
+    }
+  }
+
+  final penguins = <Penguin>[];
+  for (int i = 0; i < band.penguinCount; i++) {
+    final color = i < band.colors.length ? band.colors[i] : PenguinColor.blue;
+    Position pos;
+    if (color == PenguinColor.green) {
+      // Green can only move vertical (up/down)
+      pos = Position(centerX, 0);
+    } else if (color == PenguinColor.orange) {
+      // Orange can only move horizontal (left/right)
+      pos = Position(w - 1, centerY);
+    } else {
+      // Blue and others can move in any cardinal direction
+      pos = i == 0
+          ? Position(0, centerY)
+          : (i == 1 ? Position(centerX, h - 1) : Position(w - 1, centerY));
+    }
+
+    penguins.add(
       Penguin(
-        id: 2,
-        color: band.colors.length > 2 ? band.colors[2] : PenguinColor.orange,
-        pos: const Position(0, 0),
-        clumpId: 2,
+        id: i,
+        color: color,
+        pos: pos,
+        clumpId: i,
         maxMoves: 99,
         movesLeft: 99,
       ),
-  ];
+    );
+  }
 
   final base = GameState(
     width: w,
@@ -580,11 +632,21 @@ GeneratedLevel _generateDeterministicFallback(
     selectedId: 0,
   );
 
-  final solution = _solveBfs(base, maxDepth: 14) ??
-      [(penguinId: 0, dir: Direction.right)];
+  final solution = _solveBfs(base, maxDepth: 18) ??
+      [
+        for (final p in penguins)
+          (
+            penguinId: p.id,
+            dir: p.pos.y == 0
+                ? Direction.down
+                : (p.pos.y == h - 1
+                    ? Direction.up
+                    : (p.pos.x == 0 ? Direction.right : Direction.left))
+          )
+      ];
 
   // Calibrate fallback moves
-  final movesUsedByPenguin = <int, int>{0: 0, 1: 0};
+  final movesUsedByPenguin = <int, int>{for (final p in penguins) p.id: 0};
   GameState sim = base;
   for (final step in solution) {
     movesUsedByPenguin[step.penguinId] =

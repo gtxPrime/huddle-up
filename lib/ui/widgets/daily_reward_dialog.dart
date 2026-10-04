@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/game_storage.dart';
 import '../../services/audio_service.dart';
 import '../../services/ad_service.dart';
@@ -64,14 +63,14 @@ class _DailyRewardDialogState extends State<DailyRewardDialog> {
             end: Alignment.bottomRight,
           ),
           border: Border.all(
-            color: const Color(0xFF00E5FF).withValues(alpha: 0.7),
-            width: 2,
+            color: Colors.white.withValues(alpha: 0.18),
+            width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+              color: Colors.black.withValues(alpha: 0.55),
               blurRadius: 28,
-              spreadRadius: 4,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
@@ -79,24 +78,26 @@ class _DailyRewardDialogState extends State<DailyRewardDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Calendar Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.event_available_rounded,
-                    color: Color(0xFF00E5FF), size: 22),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.event_available_rounded,
+                      color: Color(0xFF4DD0E1), size: 22),
+                  const SizedBox(width: 8),
+                  Text(
                     '7-Day Antarctic Rewards',
                     style: GoogleFonts.outfit(
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 6),
             Text(
@@ -211,12 +212,15 @@ class _DailyRewardDialogState extends State<DailyRewardDialog> {
                     elevation: 8,
                   ),
                   icon: const Icon(Icons.play_circle_fill_rounded, size: 18),
-                  label: Text(
-                    'CLAIM 2X GIFT (+${_todayReward * 2} FISH) [AD]',
-                    style: GoogleFonts.outfit(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.5,
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'CLAIM 2X GIFT (+${_todayReward * 2} FISH) [AD]',
+                      style: GoogleFonts.outfit(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                   onPressed: () {
@@ -226,9 +230,7 @@ class _DailyRewardDialogState extends State<DailyRewardDialog> {
                     );
                   },
                 ),
-              )
-                  .animate(onPlay: (c) => c.repeat(reverse: true))
-                  .scaleXY(begin: 1.0, end: 1.03, duration: 700.ms),
+              ),
 
               const SizedBox(height: 10),
 

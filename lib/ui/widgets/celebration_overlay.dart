@@ -122,14 +122,14 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                 end: Alignment.bottomCenter,
               ),
               border: Border.all(
-                color: const Color(0xFFFFD54F).withValues(alpha: 0.75),
-                width: 2.2,
+                color: Colors.white.withValues(alpha: 0.18),
+                width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFFB300).withValues(alpha: 0.35),
-                  blurRadius: 36,
-                  spreadRadius: 6,
+                  color: Colors.black.withValues(alpha: 0.6),
+                  blurRadius: 32,
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
@@ -148,9 +148,9 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFFB300).withValues(alpha: 0.5),
-                        blurRadius: 24,
-                        spreadRadius: 3,
+                        color: Colors.black.withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
@@ -223,10 +223,9 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                           boxShadow: isEarned
                               ? [
                                   BoxShadow(
-                                    color: const Color(0xFFFFD54F)
-                                        .withValues(alpha: 0.4),
-                                    blurRadius: 14,
-                                    spreadRadius: 2,
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
                                   ),
                                 ]
                               : null,
@@ -348,8 +347,8 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                         backgroundColor: const Color(0xFFFFB300),
                         foregroundColor: const Color(0xFF1B2631),
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        elevation: 10,
-                        shadowColor: const Color(0xFFFFB300).withValues(alpha: 0.6),
+                        elevation: 4,
+                        shadowColor: Colors.black45,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                           side: const BorderSide(
@@ -357,12 +356,15 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                         ),
                       ),
                       icon: const Icon(Icons.card_giftcard_rounded, size: 18),
-                      label: Text(
-                        'CLAIM 2X BONUS (+${stars * 100} FISH) [AD]',
-                        style: GoogleFonts.outfit(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.6,
+                      label: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'CLAIM 2X BONUS (+${stars * 100} FISH) [AD]',
+                          style: GoogleFonts.outfit(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.6,
+                          ),
                         ),
                       ),
                       onPressed: () {
@@ -379,10 +381,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                         );
                       },
                     ),
-                  )
-                      .animate(onPlay: (c) => c.repeat(reverse: true))
-                      .scaleXY(begin: 1.0, end: 1.03, duration: 750.ms)
-                      .shimmer(duration: 1600.ms, color: Colors.white70),
+                  ),
 
                 if (_doubled)
                   Container(

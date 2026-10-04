@@ -1,6 +1,5 @@
 // lib/ui/widgets/card_row.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/game_state.dart';
 import '../../core/penguin_types.dart';
 import '../../core/clumps.dart';
@@ -134,26 +133,21 @@ class _CircularPenguinToken extends StatelessWidget {
                                 const Color(0xFF0B1626),
                               ],
                   ),
-                  // NO border when selected - just radiant glowing aura!
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: const Color(0xFF00E5FF).withValues(alpha: 0.65),
-                            blurRadius: 16,
-                            spreadRadius: 2,
-                          ),
-                          BoxShadow(
-                            color: def.displayColor.withValues(alpha: 0.5),
-                            blurRadius: 8,
-                          ),
-                        ]
-                      : [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.35),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.15),
+                    width: isSelected ? 2.5 : 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isSelected
+                          ? Colors.black.withValues(alpha: 0.5)
+                          : Colors.black.withValues(alpha: 0.3),
+                      blurRadius: isSelected ? 8 : 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -190,8 +184,8 @@ class _CircularPenguinToken extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        blurRadius: 4,
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 3,
                       ),
                     ],
                   ),
@@ -264,13 +258,7 @@ class _CircularPenguinToken extends StatelessWidget {
       ),
     );
 
-    // Subtle breathing animation when selected
-    if (isSelected && !inIgloo) {
-      token = token
-          .animate(onPlay: (c) => c.repeat(reverse: true))
-          .scaleXY(begin: 1.0, end: 1.06, duration: 550.ms, curve: Curves.easeInOut);
-    }
-
+    // Keep cards static and clean
     return token;
   }
 }

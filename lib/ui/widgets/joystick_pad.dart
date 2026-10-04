@@ -120,39 +120,48 @@ class _DpadUndoButton extends StatelessWidget {
           ),
           border: Border.all(
             color: canUndo
-                ? const Color(0xFF4FC3F7)
+                ? Colors.white.withValues(alpha: 0.35)
                 : Colors.white.withValues(alpha: 0.1),
-            width: canUndo ? 2 : 1,
+            width: canUndo ? 1.5 : 1,
           ),
           boxShadow: canUndo
               ? [
                   BoxShadow(
-                    color: const Color(0xFF0288D1).withValues(alpha: 0.45),
-                    blurRadius: 10,
+                    color: Colors.black.withValues(alpha: 0.4),
+                    blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
                 ]
               : null,
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.replay_rounded,
-              size: 20,
-              color: canUndo ? Colors.white : Colors.white24,
-            ),
-            Text(
-              'UNDO',
-              style: GoogleFonts.outfit(
-                fontSize: 8.5,
-                fontWeight: FontWeight.w900,
-                color: canUndo ? const Color(0xFF80D8FF) : Colors.white24,
-                letterSpacing: 0.4,
-                height: 1.1,
+        child: Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.replay_rounded,
+                    size: 20,
+                    color: canUndo ? Colors.white : Colors.white24,
+                  ),
+                  Text(
+                    'UNDO',
+                    style: GoogleFonts.outfit(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w900,
+                      color: canUndo ? Colors.white : Colors.white24,
+                      letterSpacing: 0.4,
+                      height: 1.1,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -210,15 +219,15 @@ class _DpadButton extends StatelessWidget {
           ),
           border: Border.all(
             color: isEnabled
-                ? const Color(0xFF80D8FF)
-                : Colors.white.withValues(alpha: 0.12),
-            width: isEnabled ? 2 : 1,
+                ? Colors.white.withValues(alpha: 0.35)
+                : Colors.white.withValues(alpha: 0.1),
+            width: isEnabled ? 1.5 : 1,
           ),
           boxShadow: isEnabled
               ? [
                   BoxShadow(
-                    color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
-                    blurRadius: 10,
+                    color: Colors.black.withValues(alpha: 0.4),
+                    blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
                 ]
