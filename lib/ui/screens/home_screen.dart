@@ -230,7 +230,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 14),
 
                 // Daily Mystery Chest Rewarded Ad Button
-                InkWell(
+                _HomeButton(
+                  icon: Icons.card_giftcard_rounded,
+                  label: 'MYSTERY CHEST [AD]',
+                  accent: const Color(0xFFFF8F00),
+                  baseColor: const Color(0xFFE65100),
                   onTap: () {
                     AdService.showRewardedMysteryGiftAd(
                       context,
@@ -255,46 +259,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     );
                   },
-                  borderRadius: BorderRadius.circular(18),
-                  child: Container(
-                    width: 290,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFFF8F00), Color(0xFFFFB300)],
-                      ),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: const Color(0xFFFFE082),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFF8F00).withValues(alpha: 0.5),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.card_giftcard_rounded,
-                            color: Colors.white, size: 18),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Mystery Chest (+250 🐟) [AD]',
-                          style: GoogleFonts.outfit(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 )
                     .animate(delay: 750.ms, onPlay: (c) => c.repeat(reverse: true))
                     .scaleXY(begin: 1.0, end: 1.03, duration: 800.ms),
